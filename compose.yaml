@@ -3,7 +3,7 @@ services:
     image: "mysql:8.2.0-oraclelinux8"
     container_name: payment_mysql_db
     environment:
-      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_DATABASE=${DB_DATABASE}
       - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
     ports:
       - "3307:3306"
