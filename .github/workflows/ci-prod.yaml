@@ -14,7 +14,7 @@ on:
 
 jobs:
   check-application:
-    if: github.event_name == 'pull_request_target'
+    if: github.event_name != 'pull_request_target'
     strategy:
       matrix:
         ubuntu: ['ubuntu-latest']
