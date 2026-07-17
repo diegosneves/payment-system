@@ -3,6 +3,9 @@ name: CI Prod
 
 on:
   pull_request:
+    types:
+      - opened
+      - synchronize
     branches:
       - main
   workflow_dispatch:
@@ -189,7 +192,7 @@ jobs:
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
             DB_USERNAME=${{ secrets.DB_USERNAME }}
 
-  build-push-image:
+  build-push-prd-image:
     # Executar apenas quando a PR for fechada e mesclada
     if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
