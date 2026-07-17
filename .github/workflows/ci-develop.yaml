@@ -87,7 +87,7 @@ jobs:
           mvn test
         shell: bash
 
-  build-push-image:
+  build-push-sandbox-image:
     # Executar apenas quando a PR for fechada e mesclada
     if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
