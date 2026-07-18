@@ -1,0 +1,67 @@
+name: 🔹 Sub-task Request
+description: Registre uma sub-tarefa vinculada a uma tarefa principal
+title: "[SUBTASK] - "
+labels: ["subtask"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🔹 Nova Sub-tarefa
+        Preencha as informações abaixo. Lembre-se de vincular à tarefa pai nos comentários ou no campo de _linked issues_.
+
+  - type: input
+    id: parent_task
+    attributes:
+      label: Tarefa pai (Issue)
+      description: Informe o número ou link da issue pai.
+      placeholder: "Ex: #42 ou https://github.com/..."
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: components
+    attributes:
+      label: Componentes afetados
+      options:
+        - label: Server (Backend)
+          required: false
+        - label: Web (Frontend)
+          required: false
+        - label: Mobile
+          required: false
+        - label: API
+          required: false
+        - label: Infraestrutura / DevOps
+          required: false
+        - label: Banco de Dados
+          required: false
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Descrição da sub-tarefa
+      description: O que especificamente deve ser feito nesta sub-tarefa?
+      placeholder: Ex. Criar o repositório JPA para a entidade Payment.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Critérios de aceite
+      value: |
+        - [ ] Critério 1
+        - [ ] Critério 2
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Prioridade
+      options:
+        - 🔴 Alta
+        - 🟡 Média
+        - 🟢 Baixa
+    validations:
+      required: false

@@ -1,0 +1,69 @@
+name: ✅ Task Request
+description: Registre uma nova tarefa técnica ou de melhoria
+title: "[TASK] - "
+labels: ["feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## ✅ Nova Tarefa
+        Descreva o que precisa ser feito de forma clara e objetiva.
+
+  - type: checkboxes
+    id: components
+    attributes:
+      label: Componentes afetados
+      description: Selecione quais componentes esta tarefa afeta
+      options:
+        - label: Server (Backend)
+          required: false
+        - label: Web (Frontend)
+          required: false
+        - label: Mobile
+          required: false
+        - label: API
+          required: false
+        - label: Infraestrutura / DevOps
+          required: false
+        - label: Banco de Dados
+          required: false
+
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Descrição da tarefa
+      description: Descreva o que deve ser feito.
+      placeholder: Ex. Implementar endpoint de listagem de pagamentos com paginação.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Critérios de aceite
+      description: Quais condições devem ser atendidas para considerar esta tarefa concluída?
+      value: |
+        - [ ] Critério 1
+        - [ ] Critério 2
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexto adicional
+      description: Alguma informação extra, links ou dependências relevantes?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Prioridade
+      options:
+        - 🔴 Alta
+        - 🟡 Média
+        - 🟢 Baixa
+    validations:
+      required: true

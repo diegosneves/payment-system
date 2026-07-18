@@ -1,0 +1,78 @@
+name: 📖 User Story
+description: Descreva uma funcionalidade do ponto de vista do usuário
+title: "[USER STORY] - "
+labels: ["story"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 📖 User Story
+        Descreva a funcionalidade sob a perspectiva do usuário final.
+
+  - type: textarea
+    id: user_story
+    attributes:
+      label: História do usuário
+      description: Siga o formato padrão de User Story.
+      value: |
+        **Como** [tipo de usuário],
+        **Quero** [ação ou funcionalidade],
+        **Para** [benefício ou objetivo].
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: components
+    attributes:
+      label: Componentes afetados
+      options:
+        - label: Server (Backend)
+          required: false
+        - label: Web (Frontend)
+          required: false
+        - label: Mobile
+          required: false
+        - label: API
+          required: false
+        - label: Infraestrutura / DevOps
+          required: false
+        - label: Banco de Dados
+          required: false
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Critérios de aceite
+      description: Liste as condições que definem que esta história está completa (formato Gherkin é bem-vindo).
+      value: |
+        - [ ] Dado que... Quando... Então...
+        - [ ] Critério 2
+    validations:
+      required: true
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: Mockups / Referências visuais
+      description: Cole imagens, links de Figma ou qualquer referência visual relevante.
+    validations:
+      required: false
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notas técnicas
+      description: Alguma restrição técnica, regra de negócio ou dependência importante?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Prioridade
+      options:
+        - 🔴 Alta
+        - 🟡 Média
+        - 🟢 Baixa
+    validations:
+      required: true
