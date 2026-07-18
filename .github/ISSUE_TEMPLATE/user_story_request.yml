@@ -1,6 +1,6 @@
 name: 📖 User Story
 description: Descreva uma funcionalidade do ponto de vista do usuário
-title: "[USER STORY] - "
+title: "[STORY] - "
 labels: ["story"]
 body:
   - type: markdown

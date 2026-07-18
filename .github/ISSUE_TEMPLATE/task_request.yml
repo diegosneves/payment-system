@@ -1,13 +1,24 @@
 name: ✅ Task Request
 description: Registre uma nova tarefa técnica ou de melhoria
 title: "[TASK] - "
-labels: ["feature"]
+labels: [ "feature" ]
 body:
   - type: markdown
     attributes:
       value: |
         ## ✅ Nova Tarefa
         Descreva o que precisa ser feito de forma clara e objetiva.
+
+  - type: textarea
+    id: parent_story
+    attributes:
+      label: User Story vinculada
+      description: Se esta tarefa faz parte de uma User Story, informe o link ou número da issue (opcional).
+      placeholder: |
+        Ex: #15
+        ou https://github.com/seu-usuario/seu-repo/issues/15
+    validations:
+      required: false
 
   - type: checkboxes
     id: components
