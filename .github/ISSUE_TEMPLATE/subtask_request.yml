@@ -9,14 +9,6 @@ body:
         ## 🔹 Nova Sub-tarefa
         Preencha as informações abaixo. Lembre-se de vincular à tarefa pai nos comentários ou no campo de _linked issues_.
 
-  - type: input
-    id: parent_task
-    attributes:
-      label: Tarefa pai (Issue)
-      description: Informe o número ou link da issue pai.
-      placeholder: "Ex: #42 ou https://github.com/..."
-    validations:
-      required: true
 
   - type: checkboxes
     id: components
@@ -46,12 +38,19 @@ body:
       required: true
 
   - type: textarea
+    id: notes
+    attributes:
+      label: Notas técnicas
+      description: Alguma restrição técnica, regra de negócio ou dependência importante?
+    validations:
+      required: false
+
+  - type: textarea
     id: acceptance_criteria
     attributes:
       label: Critérios de aceite
       value: |
         - [ ] Critério 1
-        - [ ] Critério 2
     validations:
       required: true
 

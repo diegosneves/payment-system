@@ -1,0 +1,75 @@
+name: 🗺️ Epic
+description: Registre um novo épico de alto nível
+title: "[EPIC] - "
+labels: ["epic"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🗺️ Novo Épico
+        Descreva o objetivo estratégico e o valor de negócio que este épico representa.
+
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objetivo
+      description: Qual é o grande objetivo que este épico visa atingir?
+      placeholder: Ex. Permitir que usuários realizem transações financeiras completas na plataforma.
+    validations:
+      required: true
+
+  - type: textarea
+    id: business_value
+    attributes:
+      label: Valor de negócio
+      description: Por que isso é importante? Qual problema de negócio resolve?
+      placeholder: Ex. Aumentar a retenção de usuários ao eliminar a necessidade de redirecionamento para gateways externos.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: components
+    attributes:
+      label: Componentes afetados
+      description: Quais partes do sistema este épico impacta?
+      options:
+        - label: Server (Backend)
+          required: false
+        - label: Web (Frontend)
+          required: false
+        - label: Mobile
+          required: false
+        - label: API
+          required: false
+        - label: Infraestrutura / DevOps
+          required: false
+        - label: Banco de Dados
+          required: false
+
+  - type: textarea
+    id: out_of_scope
+    attributes:
+      label: Fora do escopo
+      description: O que explicitamente NÃO faz parte deste épico? Isso evita scope creep.
+      placeholder: Ex. Integração com criptomoedas não está inclusa neste épico.
+    validations:
+      required: false
+
+  - type: textarea
+    id: risks
+    attributes:
+      label: Riscos e dependências
+      description: Há dependências externas, riscos técnicos ou bloqueadores conhecidos?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Prioridade
+      options:
+        - 🔴 Alta
+        - 🟡 Média
+        - 🟢 Baixa
+    validations:
+      required: true
