@@ -40,13 +40,20 @@ body:
           required: false
 
   - type: textarea
+    id: notes
+    attributes:
+      label: Notas técnicas
+      description: Alguma restrição técnica, regra de negócio ou dependência importante?
+    validations:
+      required: false
+
+  - type: textarea
     id: acceptance_criteria
     attributes:
       label: Critérios de aceite
       description: Liste as condições que definem que esta história está completa (formato Gherkin é bem-vindo).
       value: |
-        - [ ] Dado que... Quando... Então...
-        - [ ] Critério 2
+        - [ ] Critério 1
     validations:
       required: true
 
@@ -55,14 +62,6 @@ body:
     attributes:
       label: Mockups / Referências visuais
       description: Cole imagens, links de Figma ou qualquer referência visual relevante.
-    validations:
-      required: false
-
-  - type: textarea
-    id: notes
-    attributes:
-      label: Notas técnicas
-      description: Alguma restrição técnica, regra de negócio ou dependência importante?
     validations:
       required: false
 
