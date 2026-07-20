@@ -72,7 +72,7 @@ DB_HOST=localhost
 ### Executando os Serviços
 
 Para iniciar os serviços definidos no `compose.yaml`, execute:
-```sh
+```shell
 docker-compose up -d
 ```
 

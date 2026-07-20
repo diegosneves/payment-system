@@ -47,11 +47,10 @@ body:
           required: false
 
   - type: textarea
-    id: out_of_scope
+    id: mockups
     attributes:
-      label: Fora do escopo
-      description: O que explicitamente NÃO faz parte deste épico? Isso evita scope creep.
-      placeholder: Ex. Integração com criptomoedas não está inclusa neste épico.
+      label: Mockups / Referências visuais
+      description: Cole imagens, links de Figma ou qualquer referência visual relevante.
     validations:
       required: false
 
@@ -62,6 +61,16 @@ body:
       description: Há dependências externas, riscos técnicos ou bloqueadores conhecidos?
     validations:
       required: false
+
+  - type: textarea
+    id: out_of_scope
+    attributes:
+      label: Fora do escopo
+      description: O que explicitamente NÃO faz parte deste épico? Isso evita scope creep.
+      placeholder: Ex. Integração com criptomoedas não está inclusa neste épico.
+    validations:
+      required: false
+
 
   - type: dropdown
     id: priority
