@@ -7,26 +7,7 @@ body:
     attributes:
       value: |
         ## 🔹 Nova Sub-tarefa
-        Preencha as informações abaixo. Lembre-se de vincular à tarefa pai nos comentários ou no campo de _linked issues_.
-
-
-  - type: checkboxes
-    id: components
-    attributes:
-      label: Componentes afetados
-      options:
-        - label: Server (Backend)
-          required: false
-        - label: Web (Frontend)
-          required: false
-        - label: Mobile
-          required: false
-        - label: API
-          required: false
-        - label: Infraestrutura / DevOps
-          required: false
-        - label: Banco de Dados
-          required: false
+        Preencha as informações abaixo. Lembre-se de vincular à tarefa pai.
 
   - type: textarea
     id: description
@@ -41,18 +22,18 @@ body:
     id: notes
     attributes:
       label: Notas técnicas
-      description: Alguma restrição técnica, regra de negócio ou dependência importante?
+      description: Detalhes técnicos relevantes para a implementação desta tarefa.
+      placeholder: Ex. A entidade Payment deve ter os campos `id`, `transactionId`, `amount`, `status` e `createdAt`.
     validations:
       required: false
 
   - type: textarea
-    id: acceptance_criteria
+    id: mockups
     attributes:
-      label: Critérios de aceite
-      value: |
-        - [ ] Critério 1
+      label: Mockups / Referências visuais
+      description: Cole imagens, links de Figma ou qualquer referência visual relevante.
     validations:
-      required: true
+      required: false
 
   - type: dropdown
     id: priority

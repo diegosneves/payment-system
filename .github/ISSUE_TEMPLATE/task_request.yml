@@ -39,12 +39,13 @@ body:
       required: true
 
   - type: textarea
-    id: notes
+    id: business_rules
     attributes:
-      label: Notas técnicas
-      description: Alguma restrição técnica, regra de negócio ou dependência importante?
+      label: Regras de negócio
+      description: Descreva as regras de negócio que devem ser seguidas.
+      placeholder: Ex. O identificador do pagamento deve ser único.
     validations:
-      required: false
+      required: true
 
   - type: textarea
     id: acceptance_criteria
@@ -52,15 +53,32 @@ body:
       label: Critérios de aceite
       description: Quais condições devem ser atendidas para considerar esta tarefa concluída?
       value: |
-        - [ ] Critério 1
+        - [ ] Critério...
     validations:
       required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notas técnicas
+      description: Detalhes técnicos relevantes para a implementação desta tarefa.
+      placeholder: Ex. Ao enviar o pagamento com o `transactionId` vazio, a API deve retornar um erro 400 com a mensagem "Transaction ID is required".
+    validations:
+      required: false
 
   - type: textarea
     id: context
     attributes:
       label: Contexto adicional
       description: Alguma informação extra, links ou dependências relevantes?
+    validations:
+      required: false
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: Mockups / Referências visuais
+      description: Cole imagens, links de Figma ou qualquer referência visual relevante.
     validations:
       required: false
 
