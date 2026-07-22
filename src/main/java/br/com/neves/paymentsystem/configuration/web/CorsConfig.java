@@ -6,6 +6,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
+import java.util.List;
+
 /**
  * Classe de configuração para habilitar o compartilhamento de recursos de origem cruzada (CORS).
  * <p>
@@ -67,6 +69,7 @@ public class CorsConfig {
         final var source = new UrlBasedCorsConfigurationSource();
         final var config = new CorsConfiguration();
         config.setAllowCredentials(true);
+        config.setAllowedOriginPatterns(List.of("*")); // Permitir solicitações de qualquer origem
         config.addAllowedOrigin("*"); // Permitir solicitações de qualquer origem
         config.addAllowedHeader("*"); // Permitir qualquer cabeçalho
         config.addAllowedMethod("*"); // Permitir qualquer método (GET, POST, etc.)
