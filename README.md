@@ -15,7 +15,7 @@ Estratégias de Teste em Microsserviços com Spring Boot
 
 <img align="center" src="https://raw.githubusercontent.com/devicons/devicon/6910f0503efdd315c8f9b858234310c06e04d9c0/icons/swagger/swagger-original.svg" alt="Swagger" width="40" height="30"> Swagger
 
-- [Swagger - local](http://localhost:8080/q/swagger-ui/)
+- [Swagger - local](http://localhost:8080/swagger-ui/index.html)
 
 ---
 
