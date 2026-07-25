@@ -16,7 +16,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     @Query("SELECT COALESCE(SUM(p.amount), 0) FROM Payment p WHERE p.payerId = :payerId AND p.createdAt BETWEEN :start AND :end")
     BigDecimal sumPaymentsByPayerIdAndDate(
-            @Param("payerId") Long payerId,
+            @Param("payerId") UUID payerId,
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end);
 
