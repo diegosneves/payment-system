@@ -3,8 +3,7 @@ package br.com.neves.paymentsystem.controllers;
 import br.com.neves.paymentsystem.configuration.web.ApiError;
 import br.com.neves.paymentsystem.dto.PaymentRequest;
 import br.com.neves.paymentsystem.dto.PaymentResponse;
-import br.com.neves.paymentsystem.enums.PaymentSource;
-import br.com.neves.paymentsystem.enums.PaymentStatus;
+import br.com.neves.paymentsystem.services.PaymentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,14 +20,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.math.BigDecimal;
-import java.util.UUID;
-
 @RestController
 @RequestMapping("api/payments")
 @Tag(name = "Payments", description = "Endpoints relacionados a pagamentos")
 @RequiredArgsConstructor
 public class PaymentController {
+
+    private final PaymentService paymentService;
 
     @PostMapping(
             consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -41,7 +39,7 @@ public class PaymentController {
             @ApiResponse(responseCode = "500", description = "Erro interno do servidor", content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     public ResponseEntity<PaymentResponse> createPayment(@Valid @RequestBody final PaymentRequest paymentRequest) {
-        final var response = PaymentResponse.create(1L, UUID.randomUUID(), PaymentSource.PIX, BigDecimal.TEN, PaymentStatus.PENDING);
+        final var response = this.paymentService.createPayment(paymentRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
