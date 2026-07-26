@@ -19,6 +19,10 @@ public final class Fixture {
             return PaymentRequest.create(UUID.randomUUID(), PaymentSource.PIX, new BigDecimal("100.00"));
         }
 
+        public static PaymentRequest createPixRequestWithAmount(final BigDecimal amount) {
+            return PaymentRequest.create(UUID.randomUUID(), PaymentSource.PIX, amount);
+        }
+
         public static PaymentRequest createDebitCardRequest() {
             return PaymentRequest.create(UUID.randomUUID(), PaymentSource.DEBIT_CARD, new BigDecimal("200.00"));
         }

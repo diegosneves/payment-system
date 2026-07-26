@@ -11,6 +11,7 @@ import br.com.neves.paymentsystem.validators.PaymentLimitValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -24,6 +25,7 @@ public class PaymentService {
 
     private final PaymentRepository repository;
 
+    @Transactional
     public PaymentResponse createPayment(final PaymentRequest request) {
         checkDailyLimit(request);
 
@@ -41,6 +43,8 @@ public class PaymentService {
     }
 
     private void checkDailyLimit(final PaymentRequest request) {
+        PaymentLimitValidator.validateAmount(request.amount());
+
         final LocalDate today = LocalDate.now(ZoneId.of("America/Sao_Paulo"));
         final LocalDateTime startOfDay = today.atStartOfDay();
         final LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
