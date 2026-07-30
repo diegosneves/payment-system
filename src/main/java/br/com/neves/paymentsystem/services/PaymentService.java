@@ -7,6 +7,7 @@ import br.com.neves.paymentsystem.exceptions.ErrorData;
 import br.com.neves.paymentsystem.exceptions.PaymentLimitException;
 import br.com.neves.paymentsystem.model.Payment;
 import br.com.neves.paymentsystem.repository.PaymentRepository;
+import br.com.neves.paymentsystem.utils.DataConverter;
 import br.com.neves.paymentsystem.validators.PaymentLimitValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,9 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 
 @Service
 @Slf4j
@@ -45,9 +45,9 @@ public class PaymentService {
     private void checkDailyLimit(final PaymentRequest request) {
         PaymentLimitValidator.validateAmount(request.amount());
 
-        final LocalDate today = LocalDate.now(ZoneId.of("America/Sao_Paulo"));
-        final LocalDateTime startOfDay = today.atStartOfDay();
-        final LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
+        final LocalDate today = DataConverter.BRAZIL.toLocalDateNow();
+        final Instant startOfDay = DataConverter.BRAZIL.toInstant(today);
+        final Instant endOfDay = DataConverter.BRAZIL.toInstant(today.plusDays(1));
 
         var dailyTotal = this.repository.sumPaymentsByPayerIdAndDate(
                 request.payerId(),

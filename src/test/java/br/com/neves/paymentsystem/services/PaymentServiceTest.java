@@ -1,9 +1,13 @@
 package br.com.neves.paymentsystem.services;
 
 import br.com.neves.paymentsystem.dto.PaymentResponse;
+import br.com.neves.paymentsystem.enums.PaymentStatus;
 import br.com.neves.paymentsystem.exceptions.PaymentLimitException;
+import br.com.neves.paymentsystem.model.Payment;
 import br.com.neves.paymentsystem.repository.PaymentRepository;
+import br.com.neves.paymentsystem.utils.DataConverter;
 import br.com.neves.paymentsystem.utils.Fixture;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -13,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,10 +41,18 @@ class PaymentServiceTest {
     private ArgumentCaptor<UUID> payerCaptor;
 
     @Test
+    @DisplayName("should save payment when limit is not exceeded")
     void shouldSavePaymentWhenLimitIsNotExceeded() {
         final var request = Fixture.PaymentRequests.createPixRequest();
+        final var expectedPaymentId = 1L;
+        final var expectedCreatedAt = Instant.now();
         when(this.repository.sumPaymentsByPayerIdAndDate(any(), any(), any())).thenReturn(new BigDecimal("200.00"));
-        when(this.repository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(this.repository.save(any())).thenAnswer(invocation -> {
+            Payment payment = invocation.getArgument(0);
+            payment.setId(expectedPaymentId);
+            payment.setCreatedAt(expectedCreatedAt);
+            return payment;
+        });
 
         final PaymentResponse actual = this.service.createPayment(request);
 
@@ -51,11 +64,23 @@ class PaymentServiceTest {
                 .isEqualTo(request.payerId());
 
         assertThat(actual)
+                .withFailMessage("Response should not be null")
                 .isNotNull()
                 .satisfies(response -> {
-                    assertThat(response.payerId()).isEqualTo(request.payerId());
-                    assertThat(response.amount()).isEqualByComparingTo(request.amount());
-                    assertThat(response.paymentSource()).isEqualTo(request.paymentSource());
+                    assertThat(response.payerId()).isNotNull().isEqualTo(request.payerId());
+                    assertThat(response.amount()).isNotNull().isEqualByComparingTo(request.amount());
+                    assertThat(response.paymentSource()).isNotNull().isEqualTo(request.paymentSource());
+                    assertThat(response.status()).isNotNull().isEqualTo(PaymentStatus.PENDING);
+                    assertThat(response.id())
+                            .withFailMessage("ID should not be null")
+                            .isNotNull()
+                            .withFailMessage("ID should be equal to %s".formatted(expectedPaymentId))
+                            .isEqualTo(expectedPaymentId);
+                    assertThat(response.createdAt())
+                            .withFailMessage("Created at should not be null")
+                            .isNotNull()
+                            .withFailMessage("Created at should be equal to %s".formatted(expectedCreatedAt))
+                            .isEqualTo(DataConverter.BRAZIL.toLocalDateTime(expectedCreatedAt));
                 });
     }
 
