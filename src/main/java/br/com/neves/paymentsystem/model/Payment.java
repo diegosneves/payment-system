@@ -2,6 +2,7 @@ package br.com.neves.paymentsystem.model;
 
 import br.com.neves.paymentsystem.enums.PaymentSource;
 import br.com.neves.paymentsystem.enums.PaymentStatus;
+import br.com.neves.paymentsystem.utils.DataConverter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -17,8 +18,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.Instant;
 import java.util.UUID;
 
 @Data
@@ -48,11 +48,11 @@ public class Payment {
     private PaymentStatus status;
 
     @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @PrePersist
     public void onCreate() {
-        this.createdAt = LocalDateTime.now(ZoneId.of("America/Sao_Paulo"));
+        this.createdAt = DataConverter.BRAZIL.toInstantNow();
     }
 
 }
