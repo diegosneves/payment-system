@@ -100,7 +100,7 @@ class PaymentServiceTest {
 
     @Test
     void shouldThrowExceptionWhenRequestAmountIsZero() {
-        final var request = Fixture.PaymentRequests.createPixRequestWithAmount(BigDecimal.ZERO);
+        final var request = Fixture.PaymentRequests.createPixRequestWithCustomAmount(BigDecimal.ZERO);
 
         assertThatThrownBy(() -> this.service.createPayment(request))
                 .isNotNull()
@@ -113,7 +113,7 @@ class PaymentServiceTest {
 
     @Test
     void shouldThrowExceptionWhenRequestAmountIsNegative() {
-        final var request = Fixture.PaymentRequests.createPixRequestWithAmount(new BigDecimal(-1));
+        final var request = Fixture.PaymentRequests.createPixRequestWithCustomAmount(new BigDecimal(-1));
 
         assertThatThrownBy(() -> this.service.createPayment(request))
                 .isNotNull()
