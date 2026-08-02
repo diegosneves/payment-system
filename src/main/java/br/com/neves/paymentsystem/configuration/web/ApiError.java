@@ -9,7 +9,7 @@ import java.util.List;
 public record ApiError(String message, List<ErrorData> errors) {
 
     public static ApiError from(final DomainException exception) {
-        return new ApiError(exception.toString(), exception.getErrors());
+        return new ApiError(exception.getMessage(), exception.getErrors());
     }
 
 }
