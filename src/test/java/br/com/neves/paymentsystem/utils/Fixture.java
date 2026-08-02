@@ -1,10 +1,13 @@
 package br.com.neves.paymentsystem.utils;
 
+import br.com.neves.paymentsystem.enums.PaymentStatus;
+import br.com.neves.paymentsystem.model.Payment;
 import br.com.neves.paymentsystem.utils.adapter.PaymentRequestToJsonAdapter;
 import br.com.neves.paymentsystem.dto.PaymentRequest;
 import br.com.neves.paymentsystem.enums.PaymentSource;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -86,6 +89,21 @@ public final class Fixture {
 
         public static JsonBuilder<PaymentRequest> buildJson(final PaymentRequest request) {
             return PaymentRequestToJsonAdapter.create(request);
+        }
+
+    }
+
+    public final static class Payments {
+
+        public static Payment createSamplePixPaymentDataWithStatusPending() {
+            return Payment.builder()
+                    .id(1L)
+                    .payerId(DEFAULT_PAYER_ID)
+                    .status(PaymentStatus.PENDING)
+                    .paymentSource(PaymentSource.PIX)
+                    .amount(new BigDecimal("100.00"))
+                    .createdAt(Instant.now())
+                    .build();
         }
 
     }

@@ -3,6 +3,7 @@ package br.com.neves.paymentsystem.services;
 import br.com.neves.paymentsystem.dto.PaymentResponse;
 import br.com.neves.paymentsystem.enums.PaymentStatus;
 import br.com.neves.paymentsystem.exceptions.PaymentLimitException;
+import br.com.neves.paymentsystem.exceptions.PaymentNotFoundException;
 import br.com.neves.paymentsystem.model.Payment;
 import br.com.neves.paymentsystem.repository.PaymentRepository;
 import br.com.neves.paymentsystem.utils.DataConverter;
@@ -18,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -85,6 +87,7 @@ class PaymentServiceTest {
     }
 
     @Test
+    @DisplayName("Should throw exception when limit is exceeded")
     void shouldThrowExceptionWhenLimitIsExceeded() {
         final var request = Fixture.PaymentRequests.createPixRequest();
         when(this.repository.sumPaymentsByPayerIdAndDate(any(), any(), any())).thenReturn(new BigDecimal("1901.00"));
@@ -99,6 +102,7 @@ class PaymentServiceTest {
     }
 
     @Test
+    @DisplayName("Should throw exception when receive zero amount")
     void shouldThrowExceptionWhenRequestAmountIsZero() {
         final var request = Fixture.PaymentRequests.createPixRequestWithCustomAmount(BigDecimal.ZERO);
 
@@ -112,6 +116,7 @@ class PaymentServiceTest {
     }
 
     @Test
+    @DisplayName("Should throw exception when receive negative amount")
     void shouldThrowExceptionWhenRequestAmountIsNegative() {
         final var request = Fixture.PaymentRequests.createPixRequestWithCustomAmount(new BigDecimal(-1));
 
@@ -122,6 +127,99 @@ class PaymentServiceTest {
 
         verify(this.repository, never()).sumPaymentsByPayerIdAndDate(any(), any(), any());
         verify(this.repository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Should retrieve payment data when receive valid payment ID")
+    void shouldRetrievePaymentDataWhenReceiveValidPaymentID() {
+        final var expectedPaymentData = Fixture.Payments.createSamplePixPaymentDataWithStatusPending();
+        final var expectedPaymentId = expectedPaymentData.getId();
+        final var expectedPaymentPayerId = expectedPaymentData.getPayerId();
+        final var expectedPaymentPaymentSource = expectedPaymentData.getPaymentSource();
+        final var expectedPaymentAmount = expectedPaymentData.getAmount();
+        final var expectedPaymentStatus = expectedPaymentData.getStatus();
+        when(this.repository.findById(expectedPaymentId))
+                .thenReturn(Optional.of(expectedPaymentData));
+
+        final var actualPaymentData = this.service.retrievePaymentDataById(expectedPaymentId);
+
+        verify(this.repository, times(1)).findById(expectedPaymentId);
+        verify(this.repository, never()).sumPaymentsByPayerIdAndDate(any(), any(), any());
+        verify(this.repository, never()).save(any());
+
+        assertThat(actualPaymentData)
+                .isNotNull()
+                .satisfies(payment -> {
+                    assertThat(payment.id())
+                            .withFailMessage("Expected payment id to be not null")
+                            .isNotNull()
+                            .withFailMessage("Expected payment id to be valid")
+                            .isEqualTo(expectedPaymentId);
+                    assertThat(payment.payerId())
+                            .withFailMessage("Expected payment payer id to be not null")
+                            .isNotNull()
+                            .withFailMessage("Expected payment payer id to be valid")
+                            .isEqualTo(expectedPaymentPayerId);
+                    assertThat(payment.paymentSource())
+                            .withFailMessage("Expected payment source to be not null")
+                            .isNotNull()
+                            .withFailMessage("Expected payment source to be valid")
+                            .isEqualTo(expectedPaymentPaymentSource);
+                    assertThat(payment.amount())
+                            .withFailMessage("Expected payment amount to be not null")
+                            .isNotNull()
+                            .withFailMessage("Expected payment amount to be valid")
+                            .isEqualByComparingTo(expectedPaymentAmount);
+                    assertThat(payment.status())
+                            .withFailMessage("Expected payment status to be not null")
+                            .isNotNull()
+                            .withFailMessage("Expected payment status to be valid")
+                            .isEqualTo(expectedPaymentStatus);
+                    assertThat(payment.createdAt())
+                            .withFailMessage("Expected payment creation date to be not null")
+                            .isNotNull();
+                });
+    }
+
+    @Test
+    @DisplayName("Should throws PaymentNotFoundException when receive invalid payment ID")
+    void shouldThrowsPaymentNotFoundExceptionWhenReceiveInvalidPaymentID() {
+        final var expectedPaymentId = 1L;
+        when(this.repository.findById(expectedPaymentId))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> this.service.retrievePaymentDataById(expectedPaymentId))
+                .withFailMessage("Expected payment not found exception to be not null")
+                .isNotNull()
+                .withFailMessage("Expected a PaymentNotFoundException")
+                .isInstanceOf(PaymentNotFoundException.class)
+                .withFailMessage("Invalid message")
+                .hasMessage("Payment ID: %s is not found".formatted(expectedPaymentId));
+
+        verify(this.repository, times(1)).findById(expectedPaymentId);
+        verify(this.repository, never()).sumPaymentsByPayerIdAndDate(any(), any(), any());
+        verify(this.repository, never()).save(any());
+
+    }
+
+    @Test
+    @DisplayName("Should throws PaymentNotFoundException when receive a null payment ID")
+    void shouldThrowsPaymentNotFoundExceptionWhenReceiveNullPaymentID() {
+        when(this.repository.findById(any()))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> this.service.retrievePaymentDataById(null))
+                .withFailMessage("Expected payment not found exception to be not null")
+                .isNotNull()
+                .withFailMessage("Expected a PaymentNotFoundException")
+                .isInstanceOf(PaymentNotFoundException.class)
+                .withFailMessage("Invalid message")
+                .hasMessage("Payment ID: null is not found");
+
+        verify(this.repository, times(1)).findById(any());
+        verify(this.repository, never()).sumPaymentsByPayerIdAndDate(any(), any(), any());
+        verify(this.repository, never()).save(any());
+
     }
 
 }
