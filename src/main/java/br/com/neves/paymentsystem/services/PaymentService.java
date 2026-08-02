@@ -5,6 +5,7 @@ import br.com.neves.paymentsystem.dto.PaymentResponse;
 import br.com.neves.paymentsystem.enums.PaymentStatus;
 import br.com.neves.paymentsystem.exceptions.ErrorData;
 import br.com.neves.paymentsystem.exceptions.PaymentLimitException;
+import br.com.neves.paymentsystem.exceptions.PaymentNotFoundException;
 import br.com.neves.paymentsystem.model.Payment;
 import br.com.neves.paymentsystem.repository.PaymentRepository;
 import br.com.neves.paymentsystem.utils.DataConverter;
@@ -66,5 +67,12 @@ public class PaymentService {
             );
         }
 
+    }
+
+    public PaymentResponse retrievePaymentDataById(final Long paymentId) {
+        final Payment paymentFound = this.repository.findById(paymentId).orElseThrow(
+                () -> PaymentNotFoundException.with(new ErrorData("Payment ID: %s is not found".formatted(paymentId)))
+        );
+        return PaymentResponse.from(paymentFound);
     }
 }

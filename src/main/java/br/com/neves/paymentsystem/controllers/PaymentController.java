@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,11 +38,24 @@ public class PaymentController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Pagamento criado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Requisição inválida", content = @Content(schema = @Schema(implementation = ApiError.class))),
+            @ApiResponse(responseCode = "422", description = "Pagamento inválido", content = @Content(schema = @Schema(implementation = ApiError.class))),
             @ApiResponse(responseCode = "500", description = "Erro interno do servidor", content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     public ResponseEntity<PaymentResponse> createPayment(@Valid @RequestBody final PaymentRequest paymentRequest) {
         final var response = this.paymentService.createPayment(paymentRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/{paymentId}")
+    @Operation(summary = "Recupera dados de um pagamento por ID", description = "Endpoint para recuperar dados de um pagamento por ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Dados do pagamento recuperados com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Pagamento não encontrado", content = @Content(schema = @Schema(implementation = ApiError.class))),
+            @ApiResponse(responseCode = "500", description = "Erro interno do servidor", content = @Content(schema = @Schema(implementation = ApiError.class)))
+    })
+    public ResponseEntity<PaymentResponse> retrievePaymentByPayerId(@PathVariable final Long paymentId) {
+        final var response = this.paymentService.retrievePaymentDataById(paymentId);
+        return ResponseEntity.ok().body(response);
     }
 
 }
