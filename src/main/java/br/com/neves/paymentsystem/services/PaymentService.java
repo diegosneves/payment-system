@@ -18,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -74,5 +76,12 @@ public class PaymentService {
                 () -> PaymentNotFoundException.with(new ErrorData("Payment ID: %s is not found".formatted(paymentId)))
         );
         return PaymentResponse.from(paymentFound);
+    }
+
+    public List<PaymentResponse> retrieveAllPayments() {
+        return this.repository.findAll()
+                .stream()
+                .map(PaymentResponse::from)
+                .toList();
     }
 }

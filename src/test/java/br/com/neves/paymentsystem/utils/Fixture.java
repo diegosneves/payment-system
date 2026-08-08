@@ -57,6 +57,17 @@ public final class Fixture {
                     .createdAt(Instant.now())
                     .build();
         }
+
+        public static Payment createSampleCreditCardPaymentDataWithStatusPending() {
+            return Payment.builder()
+                    .id(1L)
+                    .payerId(DEFAULT_PAYER_ID)
+                    .status(PaymentStatus.PENDING)
+                    .paymentSource(PaymentSource.CREDIT_CARD)
+                    .amount(new BigDecimal("100.00"))
+                    .createdAt(Instant.now())
+                    .build();
+        }
     }
 
 }
