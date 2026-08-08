@@ -53,7 +53,7 @@ public class PaymentController {
             @ApiResponse(responseCode = "404", description = "Pagamento não encontrado", content = @Content(schema = @Schema(implementation = ApiError.class))),
             @ApiResponse(responseCode = "500", description = "Erro interno do servidor", content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
-    public ResponseEntity<PaymentResponse> retrievePaymentByPayerId(@PathVariable final Long paymentId) {
+    public ResponseEntity<PaymentResponse> retrievePaymentByPaymentId(@PathVariable final Long paymentId) {
         final var response = this.paymentService.retrievePaymentDataById(paymentId);
         return ResponseEntity.ok().body(response);
     }
