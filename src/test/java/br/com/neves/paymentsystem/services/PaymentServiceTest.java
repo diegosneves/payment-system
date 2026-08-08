@@ -19,6 +19,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -220,6 +222,43 @@ class PaymentServiceTest {
         verify(this.repository, never()).sumPaymentsByPayerIdAndDate(any(), any(), any());
         verify(this.repository, never()).save(any());
 
+    }
+
+    @Test
+    @DisplayName("Should retrieve all payments when calling the method retrieveAllPayments")
+    void shouldRetrieveAllPaymentsWhenCallingTheMethodRetrieveAllPayment() {
+        final var expectedPaymentData1 = Fixture.Payments.createSamplePixPaymentDataWithStatusPending();
+        final var expectedPaymentData2 = Fixture.Payments.createSampleCreditCardPaymentDataWithStatusPending();
+
+        when(this.repository.findAll()).thenReturn(List.of(expectedPaymentData1, expectedPaymentData2));
+
+        final var actual = this.service.retrieveAllPayments();
+
+        assertThat(actual)
+                .isNotNull()
+                .isNotEmpty()
+                .hasSize(2)
+                .satisfiesExactly(
+                        first -> assertThat(first.paymentSource())
+                                .isNotNull()
+                                .isEqualTo(expectedPaymentData1.getPaymentSource()),
+                        second -> assertThat(second.paymentSource())
+                                .isNotNull()
+                                .isEqualTo(expectedPaymentData2.getPaymentSource())
+                );
+    }
+
+    @Test
+    @DisplayName("Should retrieve empty list when calling the method retrieveAllPayments")
+    void shouldRetrieveEmptyListWhenCallingTheMethodRetrieveAllPayment() {
+
+        when(this.repository.findAll()).thenReturn(List.of());
+
+        final var actual = this.service.retrieveAllPayments();
+
+        assertThat(actual)
+                .isNotNull()
+                .isEmpty();
     }
 
 }
