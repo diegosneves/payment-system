@@ -47,9 +47,9 @@ public final class Fixture {
 
     public final static class Payments {
 
-        public static Payment createSamplePixPaymentDataWithStatusPending() {
+        public static Payment createSamplePixPaymentDataWithStatusPending(final Long paymentId) {
             return Payment.builder()
-                    .id(1L)
+                    .id(paymentId)
                     .payerId(DEFAULT_PAYER_ID)
                     .status(PaymentStatus.PENDING)
                     .paymentSource(PaymentSource.PIX)
@@ -58,15 +58,23 @@ public final class Fixture {
                     .build();
         }
 
-        public static Payment createSampleCreditCardPaymentDataWithStatusPending() {
+        public static Payment createSamplePixPaymentDataWithStatusPending() {
+            return createSamplePixPaymentDataWithStatusPending(1L);
+        }
+
+        public static Payment createSampleCreditCardPaymentDataWithStatusPending(final Long paymentId) {
             return Payment.builder()
-                    .id(1L)
+                    .id(paymentId)
                     .payerId(DEFAULT_PAYER_ID)
                     .status(PaymentStatus.PENDING)
                     .paymentSource(PaymentSource.CREDIT_CARD)
                     .amount(new BigDecimal("100.00"))
                     .createdAt(Instant.now())
                     .build();
+        }
+
+        public static Payment createSampleCreditCardPaymentDataWithStatusPending() {
+            return createSampleCreditCardPaymentDataWithStatusPending(1L);
         }
     }
 
