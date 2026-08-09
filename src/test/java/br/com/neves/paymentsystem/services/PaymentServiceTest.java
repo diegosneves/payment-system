@@ -2,6 +2,7 @@ package br.com.neves.paymentsystem.services;
 
 import br.com.neves.paymentsystem.dto.PaymentResponse;
 import br.com.neves.paymentsystem.enums.PaymentStatus;
+import br.com.neves.paymentsystem.exceptions.PaymentException;
 import br.com.neves.paymentsystem.exceptions.PaymentLimitException;
 import br.com.neves.paymentsystem.exceptions.PaymentNotFoundException;
 import br.com.neves.paymentsystem.model.Payment;
@@ -259,6 +260,69 @@ class PaymentServiceTest {
         assertThat(actual)
                 .isNotNull()
                 .isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should return payment list when calling the method retrievePaymentByPayerId")
+    void shouldReturnPaymentListWhenCallingTheMethodRetrievePaymentByPayerId() {
+        final var payment1 = Fixture.Payments.createSamplePixPaymentDataWithStatusPending();
+        final var payment2 = Fixture.Payments.createSampleCreditCardPaymentDataWithStatusPending();
+
+        final var expectedPayerId = payment1.getPayerId();
+
+        when(this.repository.findAllByPayerId(expectedPayerId)).thenReturn(List.of(payment1, payment2));
+
+        final var actual = this.service.retrievePaymentByPayerId(expectedPayerId.toString());
+
+        assertThat(actual)
+                .isNotNull()
+                .isNotEmpty()
+                .hasSize(2)
+                .satisfiesExactlyInAnyOrder(
+                        first -> assertThat(first.payerId())
+                                .isNotNull()
+                                .isEqualTo(expectedPayerId),
+                        second -> assertThat(second.payerId())
+                                .isNotNull()
+                                .isEqualTo(expectedPayerId)
+                );
+    }
+
+    @Test
+    @DisplayName("Should return an empty payment list when calling the method retrievePaymentByPayerId")
+    void shouldReturnAnEmptyPaymentListWhenCallingTheMethodRetrievePaymentByPayerId() {
+
+        final var expectedPayerId = UUID.randomUUID();
+
+        when(this.repository.findAllByPayerId(expectedPayerId)).thenReturn(List.of());
+
+        final var actual = this.service.retrievePaymentByPayerId(expectedPayerId.toString());
+
+        assertThat(actual).isNotNull().isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should throw PaymentException when calling the method retrievePaymentByPayerId with null payerId")
+    void shouldThrowPaymentExceptionWhenCallingTheMethodRetrievePaymentByPayerIdWithInvalidPayerId() {
+
+        final var expectedPayerId = "invalid-payer-id";
+
+        assertThatThrownBy(() -> this.service.retrievePaymentByPayerId(expectedPayerId))
+                .isNotNull()
+                .isInstanceOf(PaymentException.class)
+                .hasMessageContaining(expectedPayerId);
+    }
+
+    @Test
+    @DisplayName("Should throw PaymentException when calling the method retrievePaymentByPayerId with null payerId")
+    void shouldThrowPaymentExceptionWhenCallingTheMethodRetrievePaymentByPayerIdWithNullPayerId() {
+
+        final var expectedMessageContaining = "null";
+
+        assertThatThrownBy(() -> this.service.retrievePaymentByPayerId(null))
+                .isNotNull()
+                .isInstanceOf(PaymentException.class)
+                .hasMessageContaining(expectedMessageContaining);
     }
 
 }
