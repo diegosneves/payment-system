@@ -1,6 +1,8 @@
 package br.com.neves.paymentsystem.configuration.web;
 
 import br.com.neves.paymentsystem.exceptions.DomainException;
+import br.com.neves.paymentsystem.exceptions.PaymentException;
+import br.com.neves.paymentsystem.exceptions.PaymentLimitException;
 import br.com.neves.paymentsystem.exceptions.PaymentNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -28,6 +30,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(PaymentNotFoundException.class)
     public ResponseEntity<ApiError> handlePaymentNotFoundException(final PaymentNotFoundException exception) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiError.from(exception));
+    }
+
+    @ExceptionHandler(PaymentException.class)
+    public ResponseEntity<ApiError> handlePaymentException(final PaymentException exception) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiError.from(exception));
+    }
+
+    @ExceptionHandler(PaymentLimitException.class)
+    public ResponseEntity<ApiError> handlePaymentLimitException(final PaymentLimitException exception) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(ApiError.from(exception));
     }
 
 }

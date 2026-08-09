@@ -4,6 +4,7 @@ import br.com.neves.paymentsystem.dto.PaymentRequest;
 import br.com.neves.paymentsystem.dto.PaymentResponse;
 import br.com.neves.paymentsystem.enums.PaymentStatus;
 import br.com.neves.paymentsystem.exceptions.ErrorData;
+import br.com.neves.paymentsystem.exceptions.PaymentException;
 import br.com.neves.paymentsystem.exceptions.PaymentLimitException;
 import br.com.neves.paymentsystem.exceptions.PaymentNotFoundException;
 import br.com.neves.paymentsystem.model.Payment;
@@ -12,6 +13,7 @@ import br.com.neves.paymentsystem.utils.DataConverter;
 import br.com.neves.paymentsystem.validators.PaymentLimitValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +22,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -83,5 +86,23 @@ public class PaymentService {
                 .stream()
                 .map(PaymentResponse::from)
                 .toList();
+    }
+
+    public List<PaymentResponse> retrievePaymentByPayerId(final String payerId) {
+        final UUID payerIdAsUUID = validateAndGetUuidByString(payerId);
+        return this.repository.findAllByPayerId(payerIdAsUUID)
+                .stream()
+                .map(PaymentResponse::from)
+                .toList();
+    }
+
+    private static UUID validateAndGetUuidByString(final String payerId) {
+        try {
+            return UUID.fromString(payerId);
+        } catch (IllegalArgumentException _) {
+            throw PaymentException.with(new ErrorData("Invalid UUID format for payer ID: %s".formatted(payerId)));
+        } catch (NullPointerException _) {
+            throw PaymentException.with(new ErrorData("UUID must not be null"));
+        }
     }
 }

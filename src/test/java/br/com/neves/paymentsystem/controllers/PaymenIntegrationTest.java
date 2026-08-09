@@ -199,6 +199,9 @@ class PaymenIntegrationTest {
 
         final var response = this.mapper.readValue(content, new TypeReference<List<PaymentResponse>>() {});
 
+        // Usar para tipos dinamicos ex. Class<?> elementType = resolveTypeAtRuntime(); JavaType javaType = mapper.getTypeFactory().constructCollectionType(List.class, elementType);
+//        final List<PaymentResponse> response = this.mapper.readValue(content, mapper.getTypeFactory().constructCollectionType(List.class, PaymentResponse.class));
+
         assertThat(response)
                 .isNotNull()
                 .isNotEmpty()
