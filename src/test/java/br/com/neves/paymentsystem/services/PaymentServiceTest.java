@@ -286,6 +286,8 @@ class PaymentServiceTest {
                                 .isNotNull()
                                 .isEqualTo(expectedPayerId)
                 );
+
+        verify(this.repository, times(1)).findAllByPayerId(expectedPayerId);
     }
 
     @Test
@@ -299,6 +301,8 @@ class PaymentServiceTest {
         final var actual = this.service.retrievePaymentByPayerId(expectedPayerId.toString());
 
         assertThat(actual).isNotNull().isEmpty();
+
+        verify(this.repository, times(1)).findAllByPayerId(expectedPayerId);
     }
 
     @Test
@@ -311,6 +315,8 @@ class PaymentServiceTest {
                 .isNotNull()
                 .isInstanceOf(PaymentException.class)
                 .hasMessageContaining(expectedPayerId);
+
+        verify(this.repository, never()).findAllByPayerId(any());
     }
 
     @Test
@@ -323,6 +329,8 @@ class PaymentServiceTest {
                 .isNotNull()
                 .isInstanceOf(PaymentException.class)
                 .hasMessageContaining(expectedMessageContaining);
+
+        verify(this.repository, never()).findAllByPayerId(any());
     }
 
 }

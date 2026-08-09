@@ -70,4 +70,15 @@ public class PaymentController {
         return this.paymentService.retrieveAllPayments();
     }
 
+    @GetMapping("/payer/{payerId}")
+    @Operation(summary = "Recupera todos os pagamentos por ID do pagador", description = "Endpoint para recuperar todos os pagamentos por ID do pagador")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Pagamentos recuperados com sucesso"),
+            @ApiResponse(responseCode = "400", description = "ID do pagador inválido", content = @Content(schema = @Schema(implementation = ApiError.class))),
+            @ApiResponse(responseCode = "500", description = "Erro interno do servidor", content = @Content(schema = @Schema(implementation = ApiError.class)))
+    })
+    public List<PaymentResponse> retrieveAllPaymentsByPayerId(@PathVariable final String payerId) {
+        return this.paymentService.retrievePaymentByPayerId(payerId);
+    }
+
 }

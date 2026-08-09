@@ -2,6 +2,7 @@ package br.com.neves.paymentsystem.controllers;
 
 import br.com.neves.paymentsystem.dto.PaymentResponse;
 import br.com.neves.paymentsystem.enums.PaymentStatus;
+import br.com.neves.paymentsystem.exceptions.PaymentException;
 import br.com.neves.paymentsystem.exceptions.PaymentLimitException;
 import br.com.neves.paymentsystem.model.Payment;
 import br.com.neves.paymentsystem.repository.PaymentRepository;
@@ -22,6 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
@@ -265,6 +267,148 @@ class PaymenIntegrationTest {
         assertThat(response)
                 .isNotNull()
                 .isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should return list with all payment of payer when calling method retrieve all payment by payer id")
+    @SneakyThrows
+    void shouldReturnListWithAllPaymentOfPayerWhenCallingMethodRetrieveAllPaymentByPayerId() {
+        final var createPayment = Fixture.Payments.createSamplePixPaymentDataWithStatusPending(null);
+        final var expectedPayerId = createPayment.getPayerId();
+        final var expectedPaymentSource = createPayment.getPaymentSource();
+        final var expectedAmount = createPayment.getAmount();
+        final var expectedStatus = PaymentStatus.PENDING;
+
+        final var createPayment2 = Fixture.Payments.createSampleCreditCardPaymentDataWithStatusPending(null);
+        final var expectedPayerId2 = createPayment2.getPayerId();
+        final var expectedPaymentSource2 = createPayment2.getPaymentSource();
+        final var expectedAmount2 = createPayment2.getAmount();
+        final var expectedStatus2 = PaymentStatus.PENDING;
+
+        final var createPayment3 = Fixture.Payments.createSampleCreditCardPaymentDataWithStatusPending(null);
+        createPayment3.setPayerId(UUID.randomUUID());
+
+        final Payment persistedPayment = this.paymentRepository.save(createPayment);
+        final var expectedPaymentId = persistedPayment.getId();
+        final var expectedCreateAt = DataConverter.BRAZIL.toLocalDateTime(persistedPayment.getCreatedAt());
+
+        final Payment persistedPayment2 = this.paymentRepository.save(createPayment2);
+        final var expectedPaymentId2 = persistedPayment2.getId();
+        final var expectedCreateAt2 = DataConverter.BRAZIL.toLocalDateTime(persistedPayment2.getCreatedAt());
+
+        this.paymentRepository.save(createPayment3);
+
+        final var content = mockMvc.perform(get("/api/payments/payer/{payerId}", expectedPayerId.toString())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        final var response = this.mapper.readValue(content, new TypeReference<List<PaymentResponse>>() {});
+
+        assertThat(response)
+                .isNotNull()
+                .isNotEmpty()
+                .hasSize(2)
+                .satisfiesExactlyInAnyOrder(
+                        first -> {
+                            assertThat(first.id())
+                                    .isNotNull()
+                                    .isEqualTo(expectedPaymentId);
+                            assertThat(first.payerId())
+                                    .isNotNull()
+                                    .isEqualTo(expectedPayerId);
+                            assertThat(first.paymentSource())
+                                    .isNotNull()
+                                    .isEqualTo(expectedPaymentSource);
+                            assertThat(first.amount())
+                                    .isNotNull()
+                                    .isEqualByComparingTo(expectedAmount);
+                            assertThat(first.status())
+                                    .isNotNull()
+                                    .isEqualTo(expectedStatus);
+                            assertThat(first.createdAt())
+                                    .isNotNull()
+                                    .isCloseTo(expectedCreateAt, within(1, ChronoUnit.SECONDS));
+                        },
+                        second -> {
+                            assertThat(second.id())
+                                    .isNotNull()
+                                    .isEqualTo(expectedPaymentId2);
+                            assertThat(second.payerId())
+                                    .isNotNull()
+                                    .isEqualTo(expectedPayerId2);
+                            assertThat(second.paymentSource())
+                                    .isNotNull()
+                                    .isEqualTo(expectedPaymentSource2);
+                            assertThat(second.amount())
+                                    .isNotNull()
+                                    .isEqualByComparingTo(expectedAmount2);
+                            assertThat(second.status())
+                                    .isNotNull()
+                                    .isEqualTo(expectedStatus2);
+                            assertThat(second.createdAt())
+                                    .isNotNull()
+                                    .isCloseTo(expectedCreateAt2, within(1, ChronoUnit.SECONDS));
+                        }
+                );
+    }
+
+
+    @Test
+    @DisplayName("Should return empty list when calling retrieve payment by payer id")
+    @SneakyThrows
+    void shouldReturnEmptyListWhenCallingRetrievePaymentByPayerId() {
+        final var createPayment = Fixture.Payments.createSamplePixPaymentDataWithStatusPending(null);
+        final var createPayment2 = Fixture.Payments.createSampleCreditCardPaymentDataWithStatusPending(null);
+
+        final var samplePayerId = UUID.randomUUID();
+
+        this.paymentRepository.saveAll(List.of(createPayment, createPayment2));
+
+        final var content = mockMvc.perform(get("/api/payments/payer/{payerId}", samplePayerId.toString())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        final var response = this.mapper.readValue(content, new TypeReference<List<PaymentResponse>>() {});
+
+        assertThat(response).isNotNull().isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should throw PaymentException when calling method retrieve all payment by payer id with invalid payer id")
+    @SneakyThrows
+    void shouldThrowPaymentExceptionWhenCallingMethodRetrieveAllPaymentByPayerIdWithInvalidPayerId() {
+
+        final var expectedMessageContaining = "Invalid-uuid-string";
+
+        final var content = mockMvc.perform(get("/api/payments/payer/{payerId}", expectedMessageContaining)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString();
+
+        final var response = this.mapper.readValue(content, PaymentException.class);
+
+        assertThat(response)
+                .isNotNull()
+                .as("Expected response to be an instance of PaymentException")
+                .isInstanceOf(PaymentException.class)
+                .satisfies(ex -> {
+                    assertThat(ex.getMessage())
+                            .isNotNull()
+                            .isNotEmpty()
+                            .contains(expectedMessageContaining);
+                    assertThat(ex.getErrors())
+                            .isNotNull()
+                            .isNotEmpty()
+                            .hasSize(1)
+                            .satisfiesExactly(error ->
+                                    assertThat(error.message())
+                                            .isNotNull()
+                                            .isNotEmpty()
+                                            .contains(expectedMessageContaining)
+                            );
+                });
     }
 
 }
