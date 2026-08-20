@@ -1,7 +1,9 @@
 package br.com.neves.paymentsystem.services;
 
 import br.com.neves.paymentsystem.dto.PaymentResponse;
+import br.com.neves.paymentsystem.dto.UpdatePaymentStatusRequest;
 import br.com.neves.paymentsystem.enums.PaymentStatus;
+import br.com.neves.paymentsystem.exceptions.PaymentConstraintsException;
 import br.com.neves.paymentsystem.exceptions.PaymentException;
 import br.com.neves.paymentsystem.exceptions.PaymentLimitException;
 import br.com.neves.paymentsystem.exceptions.PaymentNotFoundException;
@@ -20,13 +22,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -331,6 +333,133 @@ class PaymentServiceTest {
                 .hasMessageContaining(expectedMessageContaining);
 
         verify(this.repository, never()).findAllByPayerId(any());
+    }
+
+    @Test
+    @DisplayName("Should update payment status to paid when current payment status is pending")
+    void shouldUpdatePaymentStatusToPaidWhenCurrentPaymentStatusIsPending() {
+        final var request = new UpdatePaymentStatusRequest(PaymentStatus.PAID);
+        final var expectedPayment = Fixture.Payments.createSamplePixPaymentDataWithStatusPending();
+        final var expectedPaymentId = expectedPayment.getId();
+        final var expectedPaymentStatus = PaymentStatus.PAID;
+        final var expectedPaymentSource = expectedPayment.getPaymentSource();
+        final var expectedPayerId = expectedPayment.getPayerId();
+        final var expectedCreatedAt = DataConverter.BRAZIL.toLocalDateTime(expectedPayment.getCreatedAt());
+
+        when(this.repository.findById(expectedPaymentId)).thenReturn(Optional.of(expectedPayment));
+        when(this.repository.save(any())).thenAnswer(returnsFirstArg());
+
+        final PaymentResponse actual = this.service.updatePaymentStatusToPaid(expectedPaymentId, request);
+
+        assertThat(actual)
+                .isNotNull()
+                .satisfies(response -> {
+                    assertThat(response.id())
+                            .isNotNull()
+                            .isEqualTo(expectedPaymentId);
+                    assertThat(response.status())
+                            .isNotNull()
+                            .isEqualTo(expectedPaymentStatus);
+                    assertThat(response.paymentSource())
+                            .isNotNull()
+                            .isEqualTo(expectedPaymentSource);
+                    assertThat(response.payerId())
+                            .isNotNull()
+                            .isEqualTo(expectedPayerId);
+                    assertThat(response.createdAt())
+                            .isNotNull()
+                            .isEqualTo(expectedCreatedAt);
+                });
+
+        verify(this.repository, times(1)).findById(expectedPaymentId);
+        verify(this.repository, times(1)).save(any());
+    }
+
+    @Test
+    @DisplayName("Should throw PaymentException when receive payment status null")
+    void shouldThrowPaymentExceptionWhenReceivePaymentStatusNull() {
+        final var expectedPaymentId = 1L;
+
+        assertThatThrownBy(() -> this.service.updatePaymentStatusToPaid(expectedPaymentId, null))
+                .isNotNull()
+                .isInstanceOf(PaymentException.class)
+                .hasMessage("Payment status must not be null");
+
+        verify(this.repository, never()).findById(expectedPaymentId);
+        verify(this.repository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Should throw PaymentNotFoundException when cant find payment id")
+    void shouldThrowPaymentNotFoundExceptionWhenCantFindPaymentId() {
+        final var request = new UpdatePaymentStatusRequest(PaymentStatus.PAID);
+        final var expectedPaymentId = 1L;
+
+        assertThatThrownBy(() -> this.service.updatePaymentStatusToPaid(expectedPaymentId, request))
+                .isNotNull()
+                .isInstanceOf(PaymentNotFoundException.class)
+                .hasMessage("Payment ID: %s is not found".formatted(expectedPaymentId));
+
+        verify(this.repository, times(1)).findById(expectedPaymentId);
+        verify(this.repository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Should throw PaymentConstraintsException when receive pending payment status for change another status")
+    void shouldThrowPaymentConstraintsExceptionWhenReceivePendingPaymentStatusForChangeAnotherStatus() {
+        final var request = new UpdatePaymentStatusRequest(PaymentStatus.PENDING);
+        final var expectedPayment = Fixture.Payments.createSamplePixPaymentDataWithStatusPaid();
+        final var expectedPaymentId = expectedPayment.getId();
+
+        when(this.repository.findById(expectedPaymentId)).thenReturn(Optional.of(expectedPayment));
+
+        assertThatThrownBy(() -> this.service.updatePaymentStatusToPaid(expectedPaymentId, request))
+                .isNotNull()
+                .isInstanceOf(PaymentConstraintsException.class)
+                .hasMessageContaining("Action not allowed for payment with status %s: %s -> %s".formatted(PaymentStatus.PAID.name(), PaymentStatus.PENDING.name(), PaymentStatus.PAID.name()));
+
+        verify(this.repository, times(1)).findById(expectedPaymentId);
+        verify(this.repository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Should update payment status to pending when current payment status is pending")
+    void shouldUpdatePaymentStatusToPendingWhenCurrentPaymentStatusIsPending() {
+        final var expectedPayment = Fixture.Payments.createSamplePixPaymentDataWithStatusPending();
+        final var expectedPaymentId = expectedPayment.getId();
+        final var expectedPaymentStatus = PaymentStatus.PENDING;
+        final var expectedPaymentSource = expectedPayment.getPaymentSource();
+        final var expectedPayerId = expectedPayment.getPayerId();
+        final var expectedCreatedAt = DataConverter.BRAZIL.toLocalDateTime(expectedPayment.getCreatedAt());
+        final var request = new UpdatePaymentStatusRequest(expectedPaymentStatus);
+
+        when(this.repository.findById(expectedPaymentId)).thenReturn(Optional.of(expectedPayment));
+        when(this.repository.save(any())).thenAnswer(returnsFirstArg());
+
+        final PaymentResponse actual = this.service.updatePaymentStatusToPaid(expectedPaymentId, request);
+
+        assertThat(actual)
+                .isNotNull()
+                .satisfies(response -> {
+                    assertThat(response.id())
+                            .isNotNull()
+                            .isEqualTo(expectedPaymentId);
+                    assertThat(response.status())
+                            .isNotNull()
+                            .isEqualTo(expectedPaymentStatus);
+                    assertThat(response.paymentSource())
+                            .isNotNull()
+                            .isEqualTo(expectedPaymentSource);
+                    assertThat(response.payerId())
+                            .isNotNull()
+                            .isEqualTo(expectedPayerId);
+                    assertThat(response.createdAt())
+                            .isNotNull()
+                            .isEqualTo(expectedCreatedAt);
+                });
+
+        verify(this.repository, times(1)).findById(expectedPaymentId);
+        verify(this.repository, times(1)).save(any());
     }
 
 }

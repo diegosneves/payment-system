@@ -1,6 +1,7 @@
 package br.com.neves.paymentsystem.configuration.web;
 
 import br.com.neves.paymentsystem.exceptions.DomainException;
+import br.com.neves.paymentsystem.exceptions.PaymentConstraintsException;
 import br.com.neves.paymentsystem.exceptions.PaymentException;
 import br.com.neves.paymentsystem.exceptions.PaymentLimitException;
 import br.com.neves.paymentsystem.exceptions.PaymentNotFoundException;
@@ -39,6 +40,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(PaymentLimitException.class)
     public ResponseEntity<ApiError> handlePaymentLimitException(final PaymentLimitException exception) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(ApiError.from(exception));
+    }
+
+    @ExceptionHandler(PaymentConstraintsException.class)
+    public ResponseEntity<ApiError> handlePaymentConstraintsException(final PaymentConstraintsException exception) {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(ApiError.from(exception));
     }
 
