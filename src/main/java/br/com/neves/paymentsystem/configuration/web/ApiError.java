@@ -12,4 +12,8 @@ public record ApiError(String message, List<ErrorData> errors) {
         return new ApiError(exception.getMessage(), exception.getErrors());
     }
 
+    public static ApiError from(final String exceptionMessage) {
+        return new ApiError(exceptionMessage, List.of());
+    }
+
 }
