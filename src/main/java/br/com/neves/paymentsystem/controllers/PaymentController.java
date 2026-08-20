@@ -3,6 +3,7 @@ package br.com.neves.paymentsystem.controllers;
 import br.com.neves.paymentsystem.configuration.web.ApiError;
 import br.com.neves.paymentsystem.dto.PaymentRequest;
 import br.com.neves.paymentsystem.dto.PaymentResponse;
+import br.com.neves.paymentsystem.dto.UpdatePaymentStatusRequest;
 import br.com.neves.paymentsystem.services.PaymentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -18,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -79,6 +81,22 @@ public class PaymentController {
     })
     public List<PaymentResponse> retrieveAllPaymentsByPayerId(@PathVariable final String payerId) {
         return this.paymentService.retrievePaymentByPayerId(payerId);
+    }
+
+    @PutMapping("/{paymentId}/status")
+    @Operation(summary = "Atualiza o status do pagamento", description = "Endpoint para atualizar o status do pagamento")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Status do pagamento atualizado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "ID do pagamento inválido", content = @Content(schema = @Schema(implementation = ApiError.class))),
+            @ApiResponse(responseCode = "404", description = "Pagamento não encontrado", content = @Content(schema = @Schema(implementation = ApiError.class))),
+            @ApiResponse(responseCode = "500", description = "Erro interno do servidor", content = @Content(schema = @Schema(implementation = ApiError.class)))
+    })
+    public ResponseEntity<PaymentResponse> updatePaymentStatus(
+            @PathVariable final Long paymentId,
+            @RequestBody final UpdatePaymentStatusRequest request
+    ) {
+        final var response = this.paymentService.updatePaymentStatusToPaid(paymentId, request);
+        return ResponseEntity.ok(response);
     }
 
 }
