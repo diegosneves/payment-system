@@ -74,7 +74,18 @@ public final class Fixture {
         }
 
         public static Payment createSampleCreditCardPaymentDataWithStatusPending() {
-            return createSampleCreditCardPaymentDataWithStatusPending(1L);
+            return createSampleCreditCardPaymentDataWithStatusPending(2L);
+        }
+
+        public static Payment createSamplePixPaymentDataWithStatusPaid() {
+            return Payment.builder()
+                    .id(3L)
+                    .payerId(DEFAULT_PAYER_ID)
+                    .status(PaymentStatus.PAID)
+                    .paymentSource(PaymentSource.PIX)
+                    .amount(new BigDecimal("100.00"))
+                    .createdAt(Instant.now())
+                    .build();
         }
     }
 
