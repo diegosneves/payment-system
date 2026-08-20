@@ -1,15 +1,19 @@
 package br.com.neves.paymentsystem.controllers;
 
 import br.com.neves.paymentsystem.dto.PaymentResponse;
+import br.com.neves.paymentsystem.dto.UpdatePaymentStatusRequest;
 import br.com.neves.paymentsystem.enums.PaymentStatus;
+import br.com.neves.paymentsystem.exceptions.PaymentConstraintsException;
 import br.com.neves.paymentsystem.exceptions.PaymentException;
 import br.com.neves.paymentsystem.exceptions.PaymentLimitException;
+import br.com.neves.paymentsystem.exceptions.PaymentNotFoundException;
 import br.com.neves.paymentsystem.model.Payment;
 import br.com.neves.paymentsystem.repository.PaymentRepository;
 import br.com.neves.paymentsystem.utils.DataConverter;
 import br.com.neves.paymentsystem.utils.Fixture;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -30,6 +35,7 @@ import static org.assertj.core.api.Assertions.within;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -199,10 +205,8 @@ class PaymentIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        final var response = this.mapper.readValue(content, new TypeReference<List<PaymentResponse>>() {});
-
-        // Usar para tipos dinamicos ex. Class<?> elementType = resolveTypeAtRuntime(); JavaType javaType = mapper.getTypeFactory().constructCollectionType(List.class, elementType);
-//        final List<PaymentResponse> response = this.mapper.readValue(content, mapper.getTypeFactory().constructCollectionType(List.class, PaymentResponse.class));
+        final var response = this.mapper.readValue(content, new TypeReference<List<PaymentResponse>>() {
+        });
 
         assertThat(response)
                 .isNotNull()
@@ -262,7 +266,8 @@ class PaymentIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        final var response = this.mapper.readValue(content, new TypeReference<List<PaymentResponse>>() {});
+        final var response = this.mapper.readValue(content, new TypeReference<List<PaymentResponse>>() {
+        });
 
         assertThat(response)
                 .isNotNull()
@@ -303,7 +308,8 @@ class PaymentIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        final var response = this.mapper.readValue(content, new TypeReference<List<PaymentResponse>>() {});
+        final var response = this.mapper.readValue(content, new TypeReference<List<PaymentResponse>>() {
+        });
 
         assertThat(response)
                 .isNotNull()
@@ -370,7 +376,8 @@ class PaymentIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        final var response = this.mapper.readValue(content, new TypeReference<List<PaymentResponse>>() {});
+        final var response = this.mapper.readValue(content, new TypeReference<List<PaymentResponse>>() {
+        });
 
         assertThat(response).isNotNull().isEmpty();
     }
@@ -410,5 +417,295 @@ class PaymentIntegrationTest {
                             );
                 });
     }
+
+    @Test
+    @DisplayName("Should return payment response when receive valid payment id and payment status is paid")
+    @SneakyThrows
+    void shouldReturnPaymentResponseWhenReceiveValidPaymentIdAndPaymentStatusIsPaid() {
+        final var createPayment = Fixture.Payments.createSamplePixPaymentDataWithStatusPending(null);
+        final var expectedPayerId = createPayment.getPayerId();
+        final var expectedPaymentSource = createPayment.getPaymentSource();
+        final var expectedAmount = createPayment.getAmount();
+        final var expectedStatus = PaymentStatus.PAID;
+
+        final var expectedPaymentId = this.paymentRepository.save(createPayment).getId();
+
+        final var request = this.mapper.writeValueAsString(new UpdatePaymentStatusRequest(expectedStatus));
+
+        final var content = mockMvc.perform(put("/api/payments/{paymentId}/status", expectedPaymentId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        final var actual = this.mapper.readValue(content, new TypeReference<PaymentResponse>() {
+        });
+
+        assertThat(actual)
+                .isNotNull()
+                .satisfies(response -> {
+                            assertThat(response.id())
+                                    .isNotNull()
+                                    .isEqualTo(expectedPaymentId);
+                            assertThat(response.amount())
+                                    .isNotNull()
+                                    .isEqualByComparingTo(expectedAmount);
+                            assertThat(response.paymentSource())
+                                    .isNotNull()
+                                    .isEqualTo(expectedPaymentSource);
+                            assertThat(response.createdAt())
+                                    .isNotNull();
+                            assertThat(response.payerId())
+                                    .isNotNull()
+                                    .isEqualTo(expectedPayerId);
+                            assertThat(response.status())
+                                    .isNotNull()
+                                    .isEqualTo(expectedStatus);
+                        }
+                );
+    }
+
+    @Test
+    @DisplayName("Should return payment response when receive valid payment id and payment status is pending")
+    @SneakyThrows
+    void shouldReturnPaymentResponseWhenReceiveValidPaymentIdAndPaymentStatusIsPending() {
+        final var createPayment = Fixture.Payments.createSamplePixPaymentDataWithStatusPending(null);
+        final var expectedPayerId = createPayment.getPayerId();
+        final var expectedPaymentSource = createPayment.getPaymentSource();
+        final var expectedAmount = createPayment.getAmount();
+        final var expectedStatus = PaymentStatus.PENDING;
+
+        final var expectedPaymentId = this.paymentRepository.save(createPayment).getId();
+
+        final var request = this.mapper.writeValueAsString(new UpdatePaymentStatusRequest(expectedStatus));
+
+        final var content = mockMvc.perform(put("/api/payments/{paymentId}/status", expectedPaymentId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        final var actual = this.mapper.readValue(content, new TypeReference<PaymentResponse>() {
+        });
+
+        assertThat(actual)
+                .isNotNull()
+                .satisfies(response -> {
+                            assertThat(response.id())
+                                    .isNotNull()
+                                    .isEqualTo(expectedPaymentId);
+                            assertThat(response.amount())
+                                    .isNotNull()
+                                    .isEqualByComparingTo(expectedAmount);
+                            assertThat(response.paymentSource())
+                                    .isNotNull()
+                                    .isEqualTo(expectedPaymentSource);
+                            assertThat(response.createdAt())
+                                    .isNotNull();
+                            assertThat(response.payerId())
+                                    .isNotNull()
+                                    .isEqualTo(expectedPayerId);
+                            assertThat(response.status())
+                                    .isNotNull()
+                                    .isEqualTo(expectedStatus);
+                        }
+                );
+    }
+
+    @Test
+    @DisplayName("Should return payment response when receive valid payment id and payment status request is paid, when retrieve payment data with paid status then must return payment response with paid status")
+    @SneakyThrows
+    void shouldReturnPaymentResponseWhenReceiveValidPaymentIdAndPaymentStatusRequestIsPaidWhenRetrievePaymentDataWithPaidStatusThenMustReturnPaymentResponseWithPaidStatus() {
+        final var createPayment = Fixture.Payments.createSamplePixPaymentDataWithStatusPaid(null);
+        final var expectedPayerId = createPayment.getPayerId();
+        final var expectedPaymentSource = createPayment.getPaymentSource();
+        final var expectedAmount = createPayment.getAmount();
+        final var expectedStatus = PaymentStatus.PAID;
+
+        final var expectedPaymentId = this.paymentRepository.save(createPayment).getId();
+
+        final var request = this.mapper.writeValueAsString(new UpdatePaymentStatusRequest(expectedStatus));
+
+        final var content = mockMvc.perform(put("/api/payments/{paymentId}/status", expectedPaymentId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        final var actual = this.mapper.readValue(content, new TypeReference<PaymentResponse>() {
+        });
+
+        assertThat(actual)
+                .isNotNull()
+                .satisfies(response -> {
+                            assertThat(response.id())
+                                    .isNotNull()
+                                    .isEqualTo(expectedPaymentId);
+                            assertThat(response.amount())
+                                    .isNotNull()
+                                    .isEqualByComparingTo(expectedAmount);
+                            assertThat(response.paymentSource())
+                                    .isNotNull()
+                                    .isEqualTo(expectedPaymentSource);
+                            assertThat(response.createdAt())
+                                    .isNotNull();
+                            assertThat(response.payerId())
+                                    .isNotNull()
+                                    .isEqualTo(expectedPayerId);
+                            assertThat(response.status())
+                                    .isNotNull()
+                                    .isEqualTo(expectedStatus);
+                        }
+                );
+    }
+
+    @Test
+    @DisplayName("Should return PaymentNotFoundException when receive valid payment id no existent")
+    @SneakyThrows
+    void shouldReturnPaymentNotFoundExceptionWhenReceiveValidPaymentIdNoExistent() {
+        final var expectedPaymentId = 1L;
+
+        final var request = this.mapper.writeValueAsString(new UpdatePaymentStatusRequest(PaymentStatus.PAID));
+
+        final var content = mockMvc.perform(put("/api/payments/{paymentId}/status", expectedPaymentId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse().getContentAsString();
+
+        final var actual = this.mapper.readValue(content, PaymentNotFoundException.class);
+
+        assertThat(actual)
+                .isNotNull()
+                .isInstanceOf(PaymentNotFoundException.class)
+                .satisfies(ex -> {
+                    assertThat(ex.getMessage())
+                            .isNotNull()
+                            .isEqualTo("Payment ID: %s is not found".formatted(expectedPaymentId));
+                    assertThat(ex.getErrors())
+                            .isNotNull()
+                            .isNotEmpty()
+                            .hasSize(1)
+                            .satisfiesExactly(error ->
+                                    assertThat(error.message())
+                                            .isNotNull()
+                                            .isEqualTo("Payment ID: %s is not found".formatted(expectedPaymentId))
+                            );
+                });
+    }
+
+    @Test
+    @DisplayName("Should return payment exception when receive null payment status request")
+    @SneakyThrows
+    void shouldReturnPaymentExceptionWhenReceiveNullPaymentStatusRequest() {
+        final var createPayment = Fixture.Payments.createSamplePixPaymentDataWithStatusPending(null);
+
+        final var expectedPaymentId = this.paymentRepository.save(createPayment).getId();
+
+        final var request = this.mapper.writeValueAsString(new UpdatePaymentStatusRequest(null));
+
+        final var content = mockMvc.perform(put("/api/payments/{paymentId}/status", expectedPaymentId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString();
+
+        final var actual = this.mapper.readValue(content, PaymentException.class);
+
+        assertThat(actual)
+                .isNotNull()
+                .isInstanceOf(PaymentException.class)
+                .satisfies(ex -> {
+                    assertThat(ex.getMessage())
+                            .isNotNull()
+                            .isEqualTo("Payment status must not be null");
+                    assertThat(ex.getErrors())
+                            .isNotNull()
+                            .isNotEmpty()
+                            .hasSize(1)
+                            .satisfiesExactly(error ->
+                                    assertThat(error.message())
+                                            .isNotNull()
+                                            .isEqualTo("Payment status must not be null")
+                            );
+                });
+    }
+
+
+    @Test
+    @DisplayName("Should return payment exception when receive invalid payment status request")
+    @SneakyThrows
+    void shouldReturnPaymentExceptionWhenReceiveInvalidPaymentStatusRequest() {
+        final var createPayment = Fixture.Payments.createSamplePixPaymentDataWithStatusPending(null);
+
+        final var expectedPaymentId = this.paymentRepository.save(createPayment).getId();
+
+        final var request = """
+                {
+                    "status": "TESTE"
+                }
+                """;
+
+        final var content = mockMvc.perform(put("/api/payments/{paymentId}/status", expectedPaymentId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andExpect(status().isUnprocessableEntity())
+                .andReturn().getResponse().getContentAsString();
+
+        final var actual = this.mapper.readValue(content, HttpMessageNotReadableException.class);
+
+        assertThat(actual)
+                .isNotNull()
+                .isInstanceOf(HttpMessageNotReadableException.class)
+                .satisfies(ex ->
+                        assertThat(ex.getMessage())
+                                .isNotNull()
+                                .contains("TESTE")
+                );
+    }
+
+    @Test
+    @DisplayName("Should return payment constraints exception when try set payment status from payment data with status paid for pending status")
+    @SneakyThrows
+    void shouldReturnPaymentConstraintsExceptionWhenTrySetPaymentStatusFromPaymentDataWithStatusPaidForPendingStatus() {
+        final var createPayment = Fixture.Payments.createSamplePixPaymentDataWithStatusPaid(null);
+        final var expectedErrorMessage = "Action not allowed for payment with status %s: %s -> %s"
+                .formatted(
+                        PaymentStatus.PAID.name(),
+                        PaymentStatus.PENDING.name(),
+                        PaymentStatus.PAID.name()
+                );
+
+        final var expectedPaymentId = this.paymentRepository.save(createPayment).getId();
+
+        final var request = this.mapper.writeValueAsString(new UpdatePaymentStatusRequest(PaymentStatus.PENDING));
+
+        final var content = mockMvc.perform(put("/api/payments/{paymentId}/status", expectedPaymentId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andExpect(status().isUnprocessableEntity())
+                .andReturn().getResponse().getContentAsString();
+
+        final var actual = this.mapper.readValue(content, PaymentConstraintsException.class);
+
+        assertThat(actual)
+                .isNotNull()
+                .isInstanceOf(PaymentConstraintsException.class)
+                .satisfies(ex -> {
+                    assertThat(ex.getMessage())
+                            .isNotNull()
+                            .isEqualTo(expectedErrorMessage);
+                    assertThat(ex.getErrors())
+                            .isNotNull()
+                            .isNotEmpty()
+                            .hasSize(1)
+                            .satisfiesExactly(error ->
+                                    assertThat(error.message())
+                                            .isNotNull()
+                                            .isEqualTo(expectedErrorMessage)
+                            );
+                });
+    }
+
 
 }
