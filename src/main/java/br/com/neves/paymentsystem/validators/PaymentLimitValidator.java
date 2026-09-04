@@ -16,12 +16,19 @@ public final class PaymentLimitValidator {
     public static Boolean isWithinLimit(final BigDecimal amount) throws PaymentLimitException {
         Boolean result = Boolean.FALSE;
         if (amount != null) {
-            if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-                throw PaymentLimitException.with(new ErrorData("Amount must be greater than zero"));
-            }
+            validateAmount(amount);
             result = amount.compareTo(MAX_PAYMENT_LIMIT) <= 0;
         }
-
         return result;
+    }
+
+    public static void validateAmount(final BigDecimal amount) throws PaymentLimitException {
+        if (isZeroOrNegativeAmount(amount)) {
+            throw PaymentLimitException.with(new ErrorData("Amount must be greater than zero"));
+        }
+    }
+
+    private static Boolean isZeroOrNegativeAmount(final BigDecimal amount) {
+        return amount != null && amount.compareTo(BigDecimal.ZERO) <= 0;
     }
 }

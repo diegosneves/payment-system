@@ -1,0 +1,25 @@
+package br.com.neves.paymentsystem.repository;
+
+import br.com.neves.paymentsystem.model.Payment;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+
+@Repository
+public interface PaymentRepository extends JpaRepository<Payment, Long> {
+
+    @Query("SELECT COALESCE(SUM(p.amount), 0) FROM Payment p WHERE p.payerId = :payerId AND p.createdAt BETWEEN :start AND :end")
+    BigDecimal sumPaymentsByPayerIdAndDate(
+            @Param("payerId") UUID payerId,
+            @Param("start") Instant start,
+            @Param("end") Instant end);
+
+    List<Payment> findAllByPayerId(UUID payerId);
+
+}

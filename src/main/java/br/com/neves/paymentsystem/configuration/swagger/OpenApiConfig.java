@@ -45,7 +45,7 @@ public class OpenApiConfig {
         return new Info()
                 .version("v1.0.0")
                 .title("Payment System Backend API")
-                .description("Paymente System API")
+                .description("Payment System API")
                 .contact(new Contact().email("neves.diegoalex@outlook.com").url("https://github.com/diegosneves/payment-system").name("Diego Neves"));
     }
 

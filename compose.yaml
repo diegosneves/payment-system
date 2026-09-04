@@ -9,6 +9,7 @@ services:
       - "3307:3306"
     volumes:
       - db-mysql-payment:/var/lib/mysql
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
 
 volumes:
   db-mysql-payment:
