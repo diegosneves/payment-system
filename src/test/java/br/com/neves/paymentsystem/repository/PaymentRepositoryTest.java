@@ -14,12 +14,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.*;
+import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
@@ -39,7 +38,7 @@ class PaymentRepositoryTest {
         final var expectedSum = new BigDecimal("400.00");
         final UUID payerId = UUID.randomUUID();
 
-        final var today = LocalDate.now();
+        final var today = DataConverter.BRAZIL.toLocalDateNow();
         final var startOfDay =  DataConverter.BRAZIL.toInstant(today.atStartOfDay());
         final var endOfDay = DataConverter.BRAZIL.toInstant(today.plusDays(1).atStartOfDay());
 
@@ -73,7 +72,7 @@ class PaymentRepositoryTest {
         final var expectedSum = new BigDecimal("50.00");
         final UUID payerId = UUID.randomUUID();
 
-        final var today = LocalDate.now();
+        final var today = DataConverter.BRAZIL.toLocalDateNow();
         final var startOfDay =  DataConverter.BRAZIL.toInstant(today.atStartOfDay());
         final var endOfDay = DataConverter.BRAZIL.toInstant(today.plusDays(1).atStartOfDay());
         final var yesterdayAtTen = DataConverter.BRAZIL.toInstant(today.atStartOfDay().minusDays(1).plusHours(10));
@@ -115,7 +114,7 @@ class PaymentRepositoryTest {
         final var expectedSum = new BigDecimal("0.00");
         final UUID payerId = UUID.randomUUID();
 
-        final var today = LocalDate.now();
+        final var today = DataConverter.BRAZIL.toLocalDateNow();
         final var startOfDay =  DataConverter.BRAZIL.toInstant(today.atStartOfDay());
         final var endOfDay = DataConverter.BRAZIL.toInstant(today.plusDays(1).atStartOfDay());
 
