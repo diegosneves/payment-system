@@ -34,6 +34,8 @@
         <junit-jupiter.version>6.0.1</junit-jupiter.version>
         <mockito.version>5.17.0</mockito.version>
         <testcontainers.version>1.21.4</testcontainers.version>
+        <datafaker.version>2.7.0</datafaker.version>
+        <archunit.version>1.5.0</archunit.version>
     </properties>
     <dependencies>
         <dependency>
@@ -116,12 +118,25 @@
             <groupId>org.testcontainers</groupId>
             <artifactId>mysql</artifactId>
             <version>${testcontainers.version}</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>net.datafaker</groupId>
+            <artifactId>datafaker</artifactId>
+            <version>${datafaker.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.tngtech.archunit</groupId>
+            <artifactId>archunit-junit5</artifactId>
+            <version>${archunit.version}</version>
         </dependency>
 
 

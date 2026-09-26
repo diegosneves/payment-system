@@ -25,7 +25,6 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.shaded.org.checkerframework.checker.units.qual.Acceleration;
 
 import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
