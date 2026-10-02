@@ -26,10 +26,13 @@
         <tag/>
         <url/>
     </scm>
+
+
     <properties>
         <java.version>25</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <modelmapper.version>3.2.5</modelmapper.version>
+        <langchain4j.version>1.20.0-beta30</langchain4j.version>
 
         <junit-jupiter.version>6.0.1</junit-jupiter.version>
         <mockito.version>5.17.0</mockito.version>
@@ -37,6 +40,7 @@
         <datafaker.version>2.7.0</datafaker.version>
         <archunit.version>1.5.0</archunit.version>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -137,6 +141,27 @@
             <groupId>com.tngtech.archunit</groupId>
             <artifactId>archunit-junit5</artifactId>
             <version>${archunit.version}</version>
+        </dependency>
+
+        <!-- LangChain4j - Core (Spring Boot 3) -->
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-spring-boot-starter</artifactId>
+            <version>${langchain4j.version}</version>
+        </dependency>
+
+        <!-- LangChain4j - Integração com Ollama (Spring Boot 3) -->
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-ollama-spring-boot-starter</artifactId>
+            <version>${langchain4j.version}</version>
+        </dependency>
+
+        <!-- LangChain4j - Easy RAG (embeddings + carregamento de documentos) -->
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-easy-rag</artifactId>
+            <version>${langchain4j.version}</version>
         </dependency>
 
 
