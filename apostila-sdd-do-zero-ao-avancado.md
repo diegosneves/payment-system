@@ -20,16 +20,22 @@
    - 2.5 [Máquina de Estados e Invariantes Críticas (`spec/SPEC-003`)](#25-máquina-de-estados-e-invariantes-críticas-spec-003)
    - 2.6 [Assistente de Viagens com IA e RAG Local (`spec/SPEC-004`)](#26-assistente-de-viagens-com-ia-e-rag-local-spec-004)
    - 2.7 [Harness Engineering e a Grade de Proteção (`spec/HARNESS.md`)](#27-harness-engineering-e-a-grade-de-proteção-specharnessmd)
-3. [Módulo 3: O Ecossistema de Ferramentas — Spec-Kit, OpenAPI e Plataformas Agênticas](#módulo-3-o-ecossistema-de-ferramentas)
+3. [Módulo 3: O Ecossistema de Ferramentas — Spec-Kit e Plataformas Agênticas](#módulo-3-o-ecossistema-de-ferramentas)
    - 3.1 [GitHub Spec-Kit (`github/spec-kit` / CLI `specify`)](#31-github-spec-kit)
-   - 3.2 [Revisão do Termo "OpenCloud" e o Ecossistema Real de Contratos (OpenAPI & Cloud Native)](#32-revisão-do-termo-opencloud)
-   - 3.3 [Plataformas Agênticas Emergentes (Tessl, Kiro e Product Dock)](#33-plataformas-agênticas-emergentes)
+   - 3.2 [Plataformas Agênticas Emergentes (Tessl, Kiro e Product Dock)](#32-plataformas-agênticas-emergentes)
 4. [Módulo 4: Passo a Passo — Como Adicionar um Novo Recurso no Projeto](#módulo-4-passo-a-passo-como-adicionar-um-novo-recurso)
    - Caso Real: Adicionando o Recurso de Estorno / Reembolso de Pagamento (`SPEC-005`)
 5. [Módulo 5: Passo a Passo — Como Modificar um Recurso Existente com Segurança](#módulo-5-passo-a-passo-como-modificar-um-recurso-existente)
    - Caso Real: Aumentando o Teto Diário para R$ 5.000 e Adicionando `CRYPTOCURRENCY`
 6. [Módulo 6: Passo a Passo — Como Criar um Projeto do Absoluto Zero com SDD e Spec-Kit](#módulo-6-passo-a-passo-como-criar-um-projeto-do-absoluto-zero)
-7. [Conclusão: O Papel do Desenvolvedor na Era dos Agentes de IA](#conclusão-o-papel-do-desenvolvedor-na-era-dos-agentes-de-ia)
+7. [Módulo 7: Como Usar o Agente de IA para Executar as Specs](#módulo-7-como-usar-o-agente-de-ia-para-executar-as-specs)
+   - 7.1 [Pré-requisitos](#71-pré-requisitos)
+   - 7.2 [O Arquivo de Instruções do Agente (`AGENTS.md`)](#72-o-arquivo-de-instruções-do-agente-agentsmd)
+   - 7.3 [Prompts Prontos para Cada Situação](#73-prompts-prontos-para-cada-situação)
+   - 7.4 [Executando na Prática](#74-executando-na-prática)
+   - 7.5 [Checklist de Revisão Humana (Human-in-the-Loop)](#75-checklist-de-revisão-humana-human-in-the-loop)
+   - 7.6 [Erros Comuns e Como Evitá-los](#76-erros-comuns)
+8. [Conclusão: O Papel do Desenvolvedor na Era dos Agentes de IA](#conclusão-o-papel-do-desenvolvedor-na-era-dos-agentes-de-ia)
 
 ---
 
@@ -697,6 +703,166 @@ jobs:
         run: ./mvnw clean test
 ```
 *Agora, qualquer contribuição futura de humanos ou robôs será validada pelo Test Harness antes do merge.*
+
+---
+
+# Módulo 7: Como Usar o Agente de IA para Executar as Specs
+
+Até aqui aprendemos a **escrever** specs e a **validá-las** com o Harness. Agora vamos ver como **delegar a implementação a um agente de IA** (Claude Code, Gemini CLI, GitHub Copilot Agent, Junie, etc.).
+
+```
+  Spec (/spec/SPEC-XXX.md)
+        │
+        ▼
+  Agente lê AGENTS.md + Spec
+        │
+        ▼
+  Agente escreve os testes (Spec-to-Test)
+        │
+        ▼
+  Agente implementa o código
+        │
+        ▼
+  Agente roda `./mvnw test`  ◄──────────┐
+        │                               │
+   ┌────┴─────┐                         │
+   ▼          ▼                         │
+ Verde      Vermelho ── lê erro + spec ─┘
+   │
+   ▼
+ Resumo das mudanças + PR
+```
+
+## 7.1 Pré-requisitos
+
+| Requisito | Por quê |
+| :--- | :--- |
+| **Java 25** (`.sdkmanrc`) | Versão exigida pelo [`pom.xml`](file:///home/diegosneves/Github/pessoal/java/payment-system/pom.xml#L32) |
+| **Docker em execução** | [`PaymentRepositoryTest`](file:///home/diegosneves/Github/pessoal/java/payment-system/src/test/java/br/com/neves/paymentsystem/repository/PaymentRepositoryTest.java) e [`PaymentIntegrationTest`](file:///home/diegosneves/Github/pessoal/java/payment-system/src/test/java/br/com/neves/paymentsystem/controllers/PaymentIntegrationTest.java) usam Testcontainers MySQL |
+| **Agente instalado** | Claude Code, Gemini CLI, Copilot Agent, Junie... |
+| **Permissão para rodar `./mvnw`** | O agente precisa executar o Harness sozinho no terminal |
+| **Arquivo `AGENTS.md` na raiz** | Dá ao agente as regras permanentes do projeto |
+
+## 7.2 O arquivo de instruções do agente (`AGENTS.md`)
+
+Cada ferramenta utiliza por convenção um nome de arquivo diferente na raiz:
+
+| Ferramenta | Arquivo na Raiz |
+| :--- | :--- |
+| **Claude Code** | [`CLAUDE.md`](file:///home/diegosneves/Github/pessoal/java/payment-system/CLAUDE.md) (aponta para `AGENTS.md`) |
+| **Gemini CLI** | [`GEMINI.md`](file:///home/diegosneves/Github/pessoal/java/payment-system/GEMINI.md) (aponta para `AGENTS.md`) |
+| **GitHub Copilot** | [`.github/copilot-instructions.md`](file:///home/diegosneves/Github/pessoal/java/payment-system/.github/copilot-instructions.md) (aponta para `AGENTS.md`) |
+| **Genérico / Junie / Codex** | [`AGENTS.md`](file:///home/diegosneves/Github/pessoal/java/payment-system/AGENTS.md) |
+
+Estrutura configurada no [`AGENTS.md`](file:///home/diegosneves/Github/pessoal/java/payment-system/AGENTS.md) do `payment-system`:
+
+```markdown
+# Instruções para Agentes de IA
+
+## Contexto
+Microsserviço de pagamentos em Java 25, Spring Boot 3.5, Spring Data JPA, MySQL 8 e Lombok.
+
+## Regra de Ouro (SDD)
+- Toda mudança de comportamento DEVE começar pela spec em `/spec`.
+- Nunca altere código de produção sem a spec correspondente estar atualizada.
+- Leia `spec/README.md` (matriz de rastreabilidade) e `spec/HARNESS.md` antes de começar.
+
+## Fluxo obrigatório
+1. Leia a spec indicada e liste as regras de negócio (RN-XX) e cenários.
+2. Escreva ou atualize os testes a partir dos cenários da spec (devem falhar primeiro).
+3. Implemente o código mínimo para satisfazer a spec.
+4. Execute o Harness: `./mvnw clean test`.
+5. Se houver falha: leia o erro, releia a spec e corrija. Máximo de 5 tentativas.
+6. Atualize `spec/README.md` (status e matriz de rastreabilidade).
+
+## Restrições
+- DTOs são Java Records imutáveis.
+- Nunca exponha entidades JPA no controller.
+- Erros seguem o padrão `ApiError`.
+- Não altere testes existentes só para fazê-los passar; se o teste divergir da spec, a spec manda.
+- Não faça commit, a menos que eu peça.
+
+## Comandos úteis
+- Todos os testes: `./mvnw clean test`
+- Unitários: `./mvnw test -Dtest=PaymentLimitValidatorTest,PaymentServiceTest`
+- Integração: `./mvnw test -Dtest=PaymentIntegrationTest`
+```
+
+## 7.3 Prompts prontos para cada situação
+
+### A) Implementar uma spec nova (`Draft` → `Implemented`)
+```text
+Leia o AGENTS.md e a spec/SPEC-005-payment-refund.md.
+1. Liste as regras de negócio e os cenários de aceitação que você identificou.
+2. Escreva primeiro os testes no PaymentServiceTest e no PaymentIntegrationTest.
+3. Rode ./mvnw test e confirme que falham pelo motivo esperado.
+4. Implemente o código de produção.
+5. Rode o Harness até ficar verde (máx. 5 tentativas).
+6. Atualize o spec/README.md e me entregue um resumo dos arquivos alterados.
+```
+
+### B) Verificar se o código ainda cumpre uma spec existente (auditoria)
+```text
+Compare a spec/SPEC-003-payment-status-transition.md com o código atual
+(PaymentService, PaymentController e testes). Liste divergências, cenários
+sem teste e regras sem implementação. Não altere nada, apenas reporte.
+```
+
+### C) Alterar comportamento existente
+```text
+A spec/SPEC-001 foi atualizada para v1.1.0 (teto de R$ 5.000,00 e CRYPTOCURRENCY).
+Veja o diff da spec com `git diff`, ajuste os testes afetados e o código de
+produção, e rode o Harness até ficar verde.
+```
+
+## 7.4 Executando na prática
+
+**Claude Code:**
+```bash
+cd payment-system
+claude
+# dentro da sessão:
+> Implemente a spec/SPEC-005-payment-refund.md seguindo o AGENTS.md
+```
+
+**Gemini CLI:**
+```bash
+gemini
+> Implemente a spec/SPEC-005-payment-refund.md seguindo o GEMINI.md
+```
+
+**Modo headless (útil em CI/CD):**
+```bash
+claude -p "Rode ./mvnw clean test, e se falhar corrija o código conforme as specs em /spec"
+```
+
+**Com Spec-Kit (comandos slash):**
+```text
+/speckit.specify   Reembolso total de pagamentos com status PAID
+/speckit.plan      Usar PaymentService e PaymentController existentes
+/speckit.tasks
+/speckit.implement
+```
+
+## 7.5 Checklist de revisão humana (Human-in-the-Loop)
+
+O agente executa com autonomia, mas **o engenheiro valida antes do merge**:
+
+- [ ] O agente alterou a spec e o código **no mesmo PR**?
+- [ ] Os testes novos refletem os cenários BDD da spec?
+- [ ] Nenhum teste existente foi enfraquecido ou removido só para passar?
+- [ ] `./mvnw clean test` está verde na sua máquina e no CI (`ci-develop.yaml`)?
+- [ ] O `spec/README.md` (matriz de rastreabilidade) foi devidamente atualizado?
+
+## 7.6 Erros comuns
+
+| Problema | Causa | Solução |
+| :--- | :--- | :--- |
+| **Agente altera o código sem tocar na spec** | Falta `AGENTS.md` ou regra de ouro | Reforçar o fluxo obrigatório no `AGENTS.md` |
+| **Testcontainers falha** | Docker desligado | Subir o Docker daemon antes de iniciar o agente |
+| **Agente "arruma" o teste em vez do código** | Prompt sem restrição | Incluir: *"a spec manda, não altere testes para passar"* |
+| **Loop infinito de correções** | Sem limite de tentativas | Definir máximo de 5 tentativas e pedir relatório de bloqueio |
+| **Agente inventa regras de negócio** | Spec com ambiguidades | Refinar a spec (cenários e erros explícitos no formato BDD) |
 
 ---
 
