@@ -217,7 +217,7 @@ O arquivo [`spec/SPEC-001-payment-creation-and-limits.md`](file:///home/diegosne
 
 ### A Regra de Negócio Crucial: RN-03 (Teto Diário de R$ 2.000,00)
 A regra diz:
-> Cada pagador tem um limite máximo de **R$ 2.000,00** por dia civil no fuso de São Paulo. Se a soma dos pagamentos do dia mais o novo valor ultrapassar R$ 2.000,00, a transação deve ser rejeitada com HTTP 422.
+> Cada pagador tem um limite máximo de **R\$ 2.000,00** por dia civil no fuso de São Paulo. Se a soma dos pagamentos do dia mais o novo valor ultrapassar R$ 2.000,00, a transação deve ser rejeitada com HTTP 422.
 
 ### Como a Spec Especificou:
 ```markdown
@@ -405,27 +405,7 @@ Ele introduz o utilitário de linha de comando `specify` e convenções de slash
 
 ---
 
-## 3.2 Revisão do Termo "OpenCloud" e o Ecossistema Real de Contratos
-
-Na solicitação inicial, foram citados os nomes *`spec-kit`* e *`opencloud` (com a observação para revisar esses nomes)*.
-
-### O Esclarecimento Técnico:
-Na engenharia de software contemporânea, não existe uma ferramenta canônica isolada chamada "OpenCloud" para criação de código a partir de specs. Os termos reais da indústria que compõem essa tríade com o `spec-kit` são:
-
-1. **OpenAPI Specification (OAS / Swagger) & OpenAPI Generator:**
-   - É o **padrão mundial aberto** para contratos de APIs REST.
-   - O projeto `payment-system` já utiliza a biblioteca [`springdoc-openapi-starter-webmvc-ui`](file:///home/diegosneves/Github/pessoal/java/payment-system/pom.xml#L100-L103) e anotações `@Operation` e `@ApiResponse` nos controladores ([`PaymentController.java:L41-L47`](file:///home/diegosneves/Github/pessoal/java/payment-system/src/main/java/br/com/neves/paymentsystem/controllers/PaymentController.java#L41-L47)).
-   - Com o plugin `openapi-generator-maven-plugin`, você pode colocar um arquivo `spec/openapi.yaml` e o Maven gera automaticamente todas as interfaces Java e DTOs no momento da compilação.
-
-2. **Cloud-Native & Open Cloud Architecture:**
-   - Trata-se da filosofia onde os microsserviços são especificados para serem portáveis entre qualquer nuvem pública (AWS, GCP, Azure) ou privada via containers Docker, Docker Compose (`compose.yaml`) e variáveis desacopladas (`.env`), sem dependência de fornecedor proprietário (*no vendor lock-in*).
-
-3. **OpenHands (antigo OpenDevin) & OpenCode:**
-   - São plataformas de agentes autônomos open-source que leem repositórios e especificações em Markdown para executar tarefas de desenvolvimento completas no terminal.
-
----
-
-## 3.3 Plataformas Agênticas Emergentes (Tessl, Kiro e Product Dock)
+## 3.2 Plataformas Agênticas Emergentes (Tessl, Kiro e Product Dock)
 
 - **[Kiro](https://kiro.dev/):** Plataforma focada em orquestrar PRDs estruturados diretamente em APIs backend funcionais, gerando endpoints e contratos.
 - **[Tessl](https://tessl.io/):** Framework pioneiro em "Spec-as-Source", onde desenvolvedores passam 90% do tempo refinando especificações e a IA mantém o código de produção sincronizado.
@@ -559,7 +539,7 @@ Quando o Harness acusar **BUILD SUCCESS (100% dos testes verdes)**, crie o Pull 
 # Módulo 5: Passo a Passo — Como Modificar um Recurso Existente com Segurança
 
 Imagine a demanda de negócio:
-> *"O teto diário de pagamentos deve subir de R$ 2.000,00 para **R$ 5.000,00** e precisamos aceitar pagamentos via **`CRYPTOCURRENCY`**."*
+> *"O teto diário de pagamentos deve subir de R\$ 2.000,00 para **R\$ 5.000,00** e precisamos aceitar pagamentos via **`CRYPTOCURRENCY`**."*
 
 ### O Anti-Padrão (Como NÃO Fazer):
 O desenvolvedor abre o Java, troca `2000.00` por `5000.00`, adiciona o enum `CRYPTOCURRENCY` e sobe o commit. A `SPEC-001` continua dizendo que o teto é 2000. O projeto agora tem documentação mentirosa e débito técnico invisível.
